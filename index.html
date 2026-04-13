@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vector Database Tutorials</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-bottom: 1px solid #334155;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.4rem;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: #94a3b8;
+            font-size: 1.15rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.75rem 2rem;
+            text-decoration: none;
+            color: inherit;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 1.5rem;
+            transition: border-color 0.25s, transform 0.2s, box-shadow 0.25s;
+        }
+
+        .card:hover {
+            border-color: #38bdf8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 24px rgba(56, 189, 248, 0.08);
+        }
+
+        .card-number {
+            background: #334155;
+            color: #94a3b8;
+            font-weight: 700;
+            font-size: 1.1rem;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .card:hover .card-number {
+            background: #38bdf8;
+            color: #0f172a;
+        }
+
+        .card-body h2 {
+            font-size: 1.25rem;
+            color: #f8fafc;
+            margin-bottom: 0.35rem;
+        }
+
+        .card-body p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .card-arrow {
+            color: #475569;
+            font-size: 1.4rem;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .card:hover .card-arrow {
+            color: #38bdf8;
+            transform: translateX(4px);
+        }
+
+        .card.coming-soon {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        .card.coming-soon .card-body h2::after {
+            content: 'Coming Soon';
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #94a3b8;
+            background: #334155;
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+            margin-left: 0.75rem;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                grid-template-columns: auto 1fr;
+                gap: 1rem;
+            }
+            .card-arrow {
+                display: none;
+            }
+            header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Vector Database Tutorials</h1>
+    <p>A series of interactive lessons building from basic vector math to understanding how vector databases work</p>
+</header>
+
+<main>
+    <div class="cards">
+        <a href="vectors.html" class="card">
+            <div class="card-number">1</div>
+            <div class="card-body">
+                <h2>Introduction to Vectors</h2>
+                <p>What vectors are, how to draw them, magnitude, addition, and the jump to higher dimensions.</p>
+            </div>
+            <div class="card-arrow">&rarr;</div>
+        </a>
+
+        <a href="dot-product.html" class="card">
+            <div class="card-number">2</div>
+            <div class="card-body">
+                <h2>The Dot Product</h2>
+                <p>Multiplying vectors component-wise, what the result tells us, and its connection to angles.</p>
+            </div>
+            <div class="card-arrow">&rarr;</div>
+        </a>
+
+        <a href="cosine-similarity.html" class="card">
+            <div class="card-number">3</div>
+            <div class="card-body">
+                <h2>Cosine Similarity</h2>
+                <p>Measuring how similar two vectors are using the dot product and magnitudes.</p>
+            </div>
+            <div class="card-arrow">&rarr;</div>
+        </a>
+
+        <a href="vector-search.html" class="card">
+            <div class="card-number">4</div>
+            <div class="card-body">
+                <h2>Vector Search</h2>
+                <p>See how a vector database finds the most relevant documents using similarity.</p>
+            </div>
+            <div class="card-arrow">&rarr;</div>
+        </a>
+
+        <a href="embeddings.html" class="card">
+            <div class="card-number">5</div>
+            <div class="card-body">
+                <h2>Live Embeddings</h2>
+                <p>A real ML model runs in your browser &mdash; search a database of words and see embeddings in action.</p>
+            </div>
+            <div class="card-arrow">&rarr;</div>
+        </a>
+    </div>
+</main>
+
+</body>
+</html>

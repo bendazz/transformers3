@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Dot Product</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-bottom: 1px solid #334155;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #e2e8f0;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        section {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        section h2 {
+            color: #38bdf8;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        section h2 .step {
+            background: #38bdf8;
+            color: #0f172a;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 0.15rem 0.6rem;
+            border-radius: 20px;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .callout {
+            background: rgba(56, 189, 248, 0.08);
+            border-left: 3px solid #38bdf8;
+            border-radius: 0 8px 8px 0;
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .callout strong {
+            color: #38bdf8;
+        }
+
+        .callout.try {
+            border-left-color: #a78bfa;
+        }
+
+        .callout.try strong {
+            color: #a78bfa;
+        }
+
+        .notation-block {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 1.05rem;
+            line-height: 2.2;
+        }
+
+        .notation-block .notation-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .notation-block .notation-label {
+            color: #64748b;
+            min-width: 180px;
+            font-size: 0.9rem;
+        }
+
+        .notation-block .notation-value {
+            font-family: 'Georgia', serif;
+            font-style: italic;
+            color: #f8fafc;
+        }
+
+        .viz-container {
+            display: flex;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+
+        canvas {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+        }
+
+        .viz-legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .viz-legend span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1.25rem 0;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            min-width: fit-content;
+        }
+
+        input[type="number"] {
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            color: #f8fafc;
+            padding: 0.4rem 0.6rem;
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+            width: 70px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus {
+            border-color: #38bdf8;
+        }
+
+        input[type="range"] {
+            accent-color: #38bdf8;
+            width: 120px;
+        }
+
+        button {
+            background: #334155;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            padding: 0.45rem 1rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #475569;
+            border-color: #64748b;
+        }
+
+        .info-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+        }
+
+        .info-item {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-label {
+            color: #64748b;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-size: 0.85rem;
+        }
+
+        .info-value {
+            color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .vec-color-a { color: #22d3ee; }
+        .vec-color-b { color: #a78bfa; }
+        .dot-color { color: #fbbf24; }
+        .result-color { color: #4ade80; }
+
+        .calc-steps {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 2;
+        }
+
+        .calc-steps .calc-label {
+            color: #64748b;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-size: 0.85rem;
+            margin-top: 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .calc-steps .calc-label:first-child {
+            margin-top: 0;
+        }
+
+        .calc-steps .calc-line {
+            color: #f8fafc;
+            padding-left: 1rem;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .comparison-table th {
+            background: #0f172a;
+            color: #38bdf8;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 2px solid #334155;
+        }
+
+        .comparison-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #1e293b;
+            color: #cbd5e1;
+        }
+
+        .comparison-table tr:nth-child(even) td {
+            background: rgba(15, 23, 42, 0.3);
+        }
+
+        /* Exercises */
+        .exercise {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .exercise-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .exercise-number {
+            background: #334155;
+            color: #e2e8f0;
+            font-weight: 700;
+            font-size: 0.85rem;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .exercise-type {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.15rem 0.65rem;
+            border-radius: 20px;
+        }
+
+        .exercise-type.dot-type {
+            background: rgba(251, 191, 36, 0.12);
+            color: #fbbf24;
+        }
+
+        .exercise-type.concept-type {
+            background: rgba(56, 189, 248, 0.12);
+            color: #38bdf8;
+        }
+
+        .exercise-prompt {
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+
+        .exercise-answer {
+            margin-top: 1rem;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.4s ease, opacity 0.3s ease;
+        }
+
+        .exercise-answer.visible {
+            max-height: 500px;
+            opacity: 1;
+        }
+
+        .exercise button.active {
+            background: #475569;
+            border-color: #64748b;
+        }
+
+        /* Dot product result indicator */
+        .dp-result-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 1rem 1.25rem;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+        }
+
+        .dp-result-number {
+            font-family: 'Courier New', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .dp-result-meaning {
+            font-size: 0.95rem;
+            color: #94a3b8;
+        }
+
+        .dp-result-meaning strong {
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="back-link">&larr; All Tutorials</a>
+    <h1>The Dot Product</h1>
+    <p>Multiplying vectors and understanding what the result means</p>
+</header>
+
+<main>
+
+    <!-- Section 1: What is the dot product? -->
+    <section>
+        <h2><span class="step">1</span> What Is the Dot Product?</h2>
+        <p>
+            The <strong>dot product</strong> (also called the <strong>scalar product</strong>)
+            takes two vectors and produces a single number. You calculate it by multiplying
+            corresponding components and adding the results.
+        </p>
+        <div class="notation-block">
+            <div class="notation-row">
+                <span class="notation-label">Formula:</span>
+                <span class="notation-value">
+                    <b>a</b> &middot; <b>b</b> = a<sub>1</sub>b<sub>1</sub> + a<sub>2</sub>b<sub>2</sub> + ... + a<sub>n</sub>b<sub>n</sub>
+                </span>
+            </div>
+            <div class="notation-row">
+                <span class="notation-label">2D example:</span>
+                <span class="notation-value">
+                    [3, 2] &middot; [1, 4] = (3)(1) + (2)(4) = 3 + 8 = 11
+                </span>
+            </div>
+            <div class="notation-row">
+                <span class="notation-label">3D example:</span>
+                <span class="notation-value">
+                    [1, 2, 3] &middot; [4, 5, 6] = (1)(4) + (2)(5) + (3)(6) = 4 + 10 + 18 = 32
+                </span>
+            </div>
+        </div>
+        <p>
+            Notice that the result is a <strong>single number</strong> (a scalar), not a
+            vector. Two vectors go in, one number comes out. This number tells us something
+            important about how the two vectors relate to each other.
+        </p>
+    </section>
+
+    <!-- Section 2: Step-by-step calculator -->
+    <section>
+        <h2><span class="step">2</span> Interactive Calculator</h2>
+        <p>
+            Adjust the two vectors below and see the dot product computed step by step.
+        </p>
+
+        <div class="controls">
+            <div class="control-group">
+                <label class="vec-color-a">A &mdash; x:</label>
+                <input type="range" id="s2-ax" min="-5" max="5" step="0.5" value="3"
+                       oninput="document.getElementById('s2-axn').value=this.value; calcDot()">
+                <input type="number" id="s2-axn" step="0.5" value="3" style="width:65px"
+                       oninput="document.getElementById('s2-ax').value=this.value; calcDot()">
+            </div>
+            <div class="control-group">
+                <label class="vec-color-a">y:</label>
+                <input type="range" id="s2-ay" min="-5" max="5" step="0.5" value="4"
+                       oninput="document.getElementById('s2-ayn').value=this.value; calcDot()">
+                <input type="number" id="s2-ayn" step="0.5" value="4" style="width:65px"
+                       oninput="document.getElementById('s2-ay').value=this.value; calcDot()">
+            </div>
+        </div>
+        <div class="controls">
+            <div class="control-group">
+                <label class="vec-color-b">B &mdash; x:</label>
+                <input type="range" id="s2-bx" min="-5" max="5" step="0.5" value="2"
+                       oninput="document.getElementById('s2-bxn').value=this.value; calcDot()">
+                <input type="number" id="s2-bxn" step="0.5" value="2" style="width:65px"
+                       oninput="document.getElementById('s2-bx').value=this.value; calcDot()">
+            </div>
+            <div class="control-group">
+                <label class="vec-color-b">y:</label>
+                <input type="range" id="s2-by" min="-5" max="5" step="0.5" value="1"
+                       oninput="document.getElementById('s2-byn').value=this.value; calcDot()">
+                <input type="number" id="s2-byn" step="0.5" value="1" style="width:65px"
+                       oninput="document.getElementById('s2-by').value=this.value; calcDot()">
+            </div>
+        </div>
+
+        <div class="calc-steps" id="s2-steps"></div>
+
+        <div class="dp-result-bar">
+            <div class="dp-result-number" id="s2-result">10</div>
+            <div class="dp-result-meaning" id="s2-meaning"></div>
+        </div>
+    </section>
+
+    <!-- Section 3: What does the sign tell us? -->
+    <section>
+        <h2><span class="step">3</span> What Does the Dot Product Tell Us?</h2>
+        <p>
+            The dot product encodes information about the <strong>angle</strong> between two
+            vectors. The sign of the result is especially meaningful:
+        </p>
+        <table class="comparison-table">
+            <thead>
+                <tr><th>Dot Product</th><th>Angle Between</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Positive</strong></td>
+                    <td>Less than 90&deg;</td>
+                    <td>Vectors point in generally the same direction</td>
+                </tr>
+                <tr>
+                    <td><strong>Zero</strong></td>
+                    <td>Exactly 90&deg;</td>
+                    <td>Vectors are perpendicular (orthogonal)</td>
+                </tr>
+                <tr>
+                    <td><strong>Negative</strong></td>
+                    <td>Greater than 90&deg;</td>
+                    <td>Vectors point in generally opposite directions</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="callout">
+            <strong>Key idea:</strong> The dot product of perpendicular vectors is always
+            zero. Try it in the calculator above: set A to [3, 0] and B to [0, 2]. The
+            products are (3)(0) + (0)(2) = 0. This property is fundamental in linear
+            algebra and comes up everywhere.
+        </div>
+    </section>
+
+    <!-- Section 4: Visual explorer -->
+    <section>
+        <h2><span class="step">4</span> Visual Explorer</h2>
+        <p>
+            Drag the tips of the vectors to see how the dot product changes with the angle
+            between them. Watch how the sign flips when vectors cross the 90&deg; boundary.
+        </p>
+
+        <div class="viz-container">
+            <canvas id="s4-canvas" width="460" height="460"></canvas>
+        </div>
+        <div class="viz-legend">
+            <span><span class="legend-dot" style="background: #22d3ee;"></span> Vector A</span>
+            <span><span class="legend-dot" style="background: #a78bfa;"></span> Vector B</span>
+        </div>
+
+        <div class="info-row">
+            <div class="info-item">
+                <span class="info-label">A:</span>
+                <span class="info-value vec-color-a" id="s4-va">[3, 3]</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">B:</span>
+                <span class="info-value vec-color-b" id="s4-vb">[4, -2]</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">A &middot; B =</span>
+                <span class="info-value dot-color" id="s4-dot">6</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Angle:</span>
+                <span class="info-value" id="s4-angle" style="color: #fbbf24;">—</span>
+            </div>
+        </div>
+
+        <div class="callout try">
+            <strong>Try it:</strong> Position the vectors so the dot product is exactly 0.
+            You'll see they form a 90&deg; angle. Now try making the dot product as large
+            as possible &mdash; you'll need both vectors pointing the same way and as long
+            as possible. What makes it most negative?
+        </div>
+    </section>
+
+    <!-- Section 5: Dot product and angle formula -->
+    <section>
+        <h2><span class="step">5</span> The Connection to Angles</h2>
+        <p>
+            The dot product is connected to the angle between two vectors by this formula:
+        </p>
+        <div class="notation-block" style="text-align: center;">
+            <span class="notation-value" style="font-size: 1.15rem;">
+                <b>a</b> &middot; <b>b</b> = ||<b>a</b>|| &times; ||<b>b</b>|| &times; cos(&theta;)
+            </span>
+        </div>
+        <p>
+            Where &theta; is the angle between the vectors. This means:
+        </p>
+        <ul style="margin: 0 0 1rem 1.5rem; color: #cbd5e1;">
+            <li style="margin-bottom: 0.5rem;">When &theta; = 0&deg; (same direction), cos(&theta;) = 1, so the dot product equals the product of the magnitudes (its maximum)</li>
+            <li style="margin-bottom: 0.5rem;">When &theta; = 90&deg; (perpendicular), cos(&theta;) = 0, so the dot product is 0</li>
+            <li style="margin-bottom: 0.5rem;">When &theta; = 180&deg; (opposite), cos(&theta;) = &minus;1, so the dot product is negative</li>
+        </ul>
+        <p>
+            Rearranging this formula gives us:
+        </p>
+        <div class="notation-block" style="text-align: center;">
+            <span class="notation-value" style="font-size: 1.15rem;">
+                cos(&theta;) =
+                <span style="display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle;">
+                    <span style="border-bottom: 2px solid #64748b; padding-bottom: 4px; margin-bottom: 4px;"><b>a</b> &middot; <b>b</b></span>
+                    <span>||<b>a</b>|| &times; ||<b>b</b>||</span>
+                </span>
+            </span>
+        </div>
+        <div class="callout">
+            <strong>Preview:</strong> This rearranged formula is exactly <strong>cosine similarity</strong>
+            &mdash; the dot product divided by the product of the magnitudes. That's the
+            subject of our next tutorial, and it's the core operation behind vector database search.
+            The dot product is the essential building block.
+        </div>
+    </section>
+
+    <!-- Section 6: Why it matters for databases -->
+    <section>
+        <h2><span class="step">6</span> Why This Matters for Databases</h2>
+        <p>
+            In a vector database, every similarity comparison between a query and a stored
+            document involves computing a dot product. If your database has 1 million
+            documents and each is a 1,536-dimensional vector, a single query requires:
+        </p>
+        <table class="comparison-table">
+            <thead>
+                <tr><th>Operation</th><th>Count</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Multiplications per dot product</td>
+                    <td>1,536</td>
+                </tr>
+                <tr>
+                    <td>Additions per dot product</td>
+                    <td>1,535</td>
+                </tr>
+                <tr>
+                    <td>Documents to compare</td>
+                    <td>1,000,000</td>
+                </tr>
+                <tr>
+                    <td>Total multiplications (brute force)</td>
+                    <td>~1.5 billion</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>
+            This is why vector databases use specialized index structures (like HNSW) to
+            avoid computing dot products against every single document. The dot product
+            is fast for one pair of vectors, but doing it a million times per query adds up.
+        </p>
+    </section>
+
+    <!-- Section 7: Exercises -->
+    <section>
+        <h2><span class="step">7</span> Practice Exercises</h2>
+        <p>
+            Try these on paper first, then click <strong>Show Answer</strong> to check your work.
+        </p>
+
+        <div class="exercise" id="ex1">
+            <div class="exercise-header">
+                <span class="exercise-number">1</span>
+                <span class="exercise-type dot-type">Dot Product</span>
+            </div>
+            <div class="exercise-prompt">
+                Compute the dot product of <strong class="vec-color-a">[2, 5]</strong>
+                and <strong class="vec-color-b">[3, -1]</strong>.
+            </div>
+            <button onclick="toggleAnswer('ex1')">Show Answer</button>
+            <div class="exercise-answer">
+                <div class="calc-steps" style="margin: 0;">
+                    <div class="calc-label">Solution:</div>
+                    <div class="calc-line"><span class="vec-color-a">[2, 5]</span> &middot; <span class="vec-color-b">[3, -1]</span></div>
+                    <div class="calc-line">= (2)(3) + (5)(-1)</div>
+                    <div class="calc-line">= 6 + (-5)</div>
+                    <div class="calc-line"><span class="result-color">= 1</span></div>
+                    <div class="calc-label">Interpretation:</div>
+                    <div class="calc-line">Positive, so the vectors point in generally the same direction (angle &lt; 90&deg;).</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="exercise" id="ex2">
+            <div class="exercise-header">
+                <span class="exercise-number">2</span>
+                <span class="exercise-type dot-type">Dot Product</span>
+            </div>
+            <div class="exercise-prompt">
+                Compute the dot product of <strong class="vec-color-a">[4, -3]</strong>
+                and <strong class="vec-color-b">[3, 4]</strong>.
+            </div>
+            <button onclick="toggleAnswer('ex2')">Show Answer</button>
+            <div class="exercise-answer">
+                <div class="calc-steps" style="margin: 0;">
+                    <div class="calc-label">Solution:</div>
+                    <div class="calc-line"><span class="vec-color-a">[4, -3]</span> &middot; <span class="vec-color-b">[3, 4]</span></div>
+                    <div class="calc-line">= (4)(3) + (-3)(4)</div>
+                    <div class="calc-line">= 12 + (-12)</div>
+                    <div class="calc-line"><span class="result-color">= 0</span></div>
+                    <div class="calc-label">Interpretation:</div>
+                    <div class="calc-line">Zero &mdash; these vectors are perpendicular (90&deg; angle).</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="exercise" id="ex3">
+            <div class="exercise-header">
+                <span class="exercise-number">3</span>
+                <span class="exercise-type dot-type">Dot Product</span>
+            </div>
+            <div class="exercise-prompt">
+                Compute the dot product of <strong class="vec-color-a">[1, -2, 3]</strong>
+                and <strong class="vec-color-b">[4, 0, -1]</strong>.
+            </div>
+            <button onclick="toggleAnswer('ex3')">Show Answer</button>
+            <div class="exercise-answer">
+                <div class="calc-steps" style="margin: 0;">
+                    <div class="calc-label">Solution:</div>
+                    <div class="calc-line"><span class="vec-color-a">[1, -2, 3]</span> &middot; <span class="vec-color-b">[4, 0, -1]</span></div>
+                    <div class="calc-line">= (1)(4) + (-2)(0) + (3)(-1)</div>
+                    <div class="calc-line">= 4 + 0 + (-3)</div>
+                    <div class="calc-line"><span class="result-color">= 1</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="exercise" id="ex4">
+            <div class="exercise-header">
+                <span class="exercise-number">4</span>
+                <span class="exercise-type concept-type">Concept</span>
+            </div>
+            <div class="exercise-prompt">
+                Without calculating, what is the dot product of <strong>[5, 0]</strong>
+                and <strong>[0, -3]</strong>? Why?
+            </div>
+            <button onclick="toggleAnswer('ex4')">Show Answer</button>
+            <div class="exercise-answer">
+                <div class="calc-steps" style="margin: 0;">
+                    <div class="calc-label">Answer:</div>
+                    <div class="calc-line"><span class="result-color">0</span></div>
+                    <div class="calc-label">Why:</div>
+                    <div class="calc-line">[5, 0] points along the x-axis and [0, -3] points along the y-axis.</div>
+                    <div class="calc-line">They are perpendicular, so their dot product must be 0.</div>
+                    <div class="calc-line">Verify: (5)(0) + (0)(-3) = 0 + 0 = 0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="exercise" id="ex5">
+            <div class="exercise-header">
+                <span class="exercise-number">5</span>
+                <span class="exercise-type dot-type">Dot Product</span>
+            </div>
+            <div class="exercise-prompt">
+                Compute the dot product of <strong class="vec-color-a">[2, -1, 3, 4]</strong>
+                and <strong class="vec-color-b">[-1, 2, 1, -2]</strong>.
+            </div>
+            <button onclick="toggleAnswer('ex5')">Show Answer</button>
+            <div class="exercise-answer">
+                <div class="calc-steps" style="margin: 0;">
+                    <div class="calc-label">Solution:</div>
+                    <div class="calc-line"><span class="vec-color-a">[2, -1, 3, 4]</span> &middot; <span class="vec-color-b">[-1, 2, 1, -2]</span></div>
+                    <div class="calc-line">= (2)(-1) + (-1)(2) + (3)(1) + (4)(-2)</div>
+                    <div class="calc-line">= -2 + (-2) + 3 + (-8)</div>
+                    <div class="calc-line"><span class="result-color">= -9</span></div>
+                    <div class="calc-label">Interpretation:</div>
+                    <div class="calc-line">Negative, so the vectors point in generally opposite directions (angle &gt; 90&deg;).</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="exercise" id="ex6">
+            <div class="exercise-header">
+                <span class="exercise-number">6</span>
+                <span class="exercise-type concept-type">Concept</span>
+            </div>
+            <div class="exercise-prompt">
+                What is the dot product of any vector with itself? Compute
+                <strong>[3, 4]</strong> &middot; <strong>[3, 4]</strong> and see if
+                the result reminds you of something from the previous tutorial.
+            </div>
+            <button onclick="toggleAnswer('ex6')">Show Answer</button>
+            <div class="exercise-answer">
+                <div class="calc-steps" style="margin: 0;">
+                    <div class="calc-label">Solution:</div>
+                    <div class="calc-line">[3, 4] &middot; [3, 4]</div>
+                    <div class="calc-line">= (3)(3) + (4)(4)</div>
+                    <div class="calc-line">= 9 + 16</div>
+                    <div class="calc-line"><span class="result-color">= 25</span></div>
+                    <div class="calc-label">Insight:</div>
+                    <div class="calc-line">25 = 5&sup2;, and the magnitude of [3, 4] is 5.</div>
+                    <div class="calc-line">The dot product of a vector with itself equals the
+                        <strong>square of its magnitude</strong>:</div>
+                    <div class="calc-line"><span class="dot-color"><b>v</b> &middot; <b>v</b> = ||<b>v</b>||&sup2;</span></div>
+                    <div class="calc-line">This is because &radic;(x&sup2; + y&sup2;) squared is just x&sup2; + y&sup2;.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="exercise" id="ex7">
+            <div class="exercise-header">
+                <span class="exercise-number">7</span>
+                <span class="exercise-type concept-type">Concept</span>
+            </div>
+            <div class="exercise-prompt">
+                Two documents are stored in a vector database as
+                <strong class="vec-color-a">[1, 3, 2]</strong> and
+                <strong class="vec-color-b">[2, -1, 1]</strong>. A user's query
+                is embedded as <strong>[2, 2, 1]</strong>. Compute the dot product
+                of the query with each document. Which document is more aligned with the query?
+            </div>
+            <button onclick="toggleAnswer('ex7')">Show Answer</button>
+            <div class="exercise-answer">
+                <div class="calc-steps" style="margin: 0;">
+                    <div class="calc-label">Query &middot; Document A:</div>
+                    <div class="calc-line">[2, 2, 1] &middot; <span class="vec-color-a">[1, 3, 2]</span></div>
+                    <div class="calc-line">= (2)(1) + (2)(3) + (1)(2)</div>
+                    <div class="calc-line">= 2 + 6 + 2 = <span class="result-color">10</span></div>
+                    <div class="calc-label">Query &middot; Document B:</div>
+                    <div class="calc-line">[2, 2, 1] &middot; <span class="vec-color-b">[2, -1, 1]</span></div>
+                    <div class="calc-line">= (2)(2) + (2)(-1) + (1)(1)</div>
+                    <div class="calc-line">= 4 + (-2) + 1 = <span class="result-color">3</span></div>
+                    <div class="calc-label">Conclusion:</div>
+                    <div class="calc-line"><strong>Document A</strong> (dot product = 10) is more aligned with the query than
+                        Document B (dot product = 3).</div>
+                    <div class="calc-line" style="margin-top: 0.5rem; color: #94a3b8;">Note: In a real vector database we'd use cosine
+                        similarity (which accounts for vector lengths) rather than the raw dot product.
+                        That's the next tutorial!</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<script>
+    // =========================================================
+    // Shared drawing utilities
+    // =========================================================
+    function drawGrid(ctx, w, h, cx, cy, scale) {
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 1;
+        for (let i = -10; i <= 10; i++) {
+            const gx = cx + i * scale;
+            const gy = cy + i * scale;
+            if (gx >= 0 && gx <= w) {
+                ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke();
+            }
+            if (gy >= 0 && gy <= h) {
+                ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
+            }
+        }
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
+        ctx.fillStyle = '#475569';
+        ctx.font = '11px Courier New, monospace';
+        ctx.textAlign = 'center';
+        for (let i = -5; i <= 5; i++) {
+            if (i === 0) continue;
+            ctx.fillText(i, cx + i * scale, cy + 16);
+            ctx.fillText(i, cx - 18, cy - i * scale + 4);
+        }
+    }
+
+    function drawArrow(ctx, x1, y1, x2, y2, color, width) {
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+        const headLen = 14;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - headLen * Math.cos(angle - 0.4), y2 - headLen * Math.sin(angle - 0.4));
+        ctx.lineTo(x2 - headLen * Math.cos(angle + 0.4), y2 - headLen * Math.sin(angle + 0.4));
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function drawHandle(ctx, x, y, color) {
+        ctx.beginPath();
+        ctx.arc(x, y, 8, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+
+    function fmt(n) {
+        const r = Math.round(n * 10000) / 10000;
+        return r === -0 ? '0' : String(r);
+    }
+
+    const SCALE = 40;
+
+    // =========================================================
+    // Section 2: Step-by-step calculator
+    // =========================================================
+    function calcDot() {
+        const ax = parseFloat(document.getElementById('s2-ax').value) || 0;
+        const ay = parseFloat(document.getElementById('s2-ay').value) || 0;
+        const bx = parseFloat(document.getElementById('s2-bx').value) || 0;
+        const by = parseFloat(document.getElementById('s2-by').value) || 0;
+
+        const prod1 = ax * bx;
+        const prod2 = ay * by;
+        const dot = prod1 + prod2;
+
+        let html = '';
+        html += `<div class="calc-label">Step 1: Multiply corresponding components</div>`;
+        html += `<div class="calc-line"><span class="vec-color-a">${fmt(ax)}</span> &times; <span class="vec-color-b">${fmt(bx)}</span> = <span class="dot-color">${fmt(prod1)}</span></div>`;
+        html += `<div class="calc-line"><span class="vec-color-a">${fmt(ay)}</span> &times; <span class="vec-color-b">${fmt(by)}</span> = <span class="dot-color">${fmt(prod2)}</span></div>`;
+        html += `<div class="calc-label">Step 2: Add the products</div>`;
+        html += `<div class="calc-line"><span class="dot-color">${fmt(prod1)}</span> + <span class="dot-color">${fmt(prod2)}</span> = <span class="result-color">${fmt(dot)}</span></div>`;
+        document.getElementById('s2-steps').innerHTML = html;
+
+        // Result
+        const resultEl = document.getElementById('s2-result');
+        resultEl.textContent = fmt(dot);
+        if (dot > 0) resultEl.style.color = '#4ade80';
+        else if (dot === 0) resultEl.style.color = '#fbbf24';
+        else resultEl.style.color = '#ef4444';
+
+        // Meaning
+        const meaningEl = document.getElementById('s2-meaning');
+        if (dot > 0) {
+            meaningEl.innerHTML = '<strong>Positive</strong> &mdash; the vectors point in generally the same direction (angle &lt; 90&deg;)';
+        } else if (dot === 0) {
+            meaningEl.innerHTML = '<strong>Zero</strong> &mdash; the vectors are perpendicular (angle = 90&deg;)';
+        } else {
+            meaningEl.innerHTML = '<strong>Negative</strong> &mdash; the vectors point in generally opposite directions (angle &gt; 90&deg;)';
+        }
+    }
+
+    // =========================================================
+    // Section 4: Visual explorer (draggable)
+    // =========================================================
+    const canvas = document.getElementById('s4-canvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const CX = W / 2, CY = H / 2;
+
+    let vizA = { x: 3, y: 3 };
+    let vizB = { x: 4, y: -2 };
+    let dragging = null;
+
+    function drawViz() {
+        drawGrid(ctx, W, H, CX, CY, SCALE);
+
+        const ax = vizA.x, ay = vizA.y;
+        const bx = vizB.x, by = vizB.y;
+        const pax = CX + ax * SCALE, pay = CY - ay * SCALE;
+        const pbx = CX + bx * SCALE, pby = CY - by * SCALE;
+
+        // Angle arc
+        const magA = Math.sqrt(ax * ax + ay * ay);
+        const magB = Math.sqrt(bx * bx + by * by);
+        const dot = ax * bx + ay * by;
+
+        if (magA > 0 && magB > 0) {
+            const angleA = Math.atan2(-ay, ax);
+            const angleB = Math.atan2(-by, bx);
+            let start = angleA, diff = angleB - angleA;
+            while (diff > Math.PI) diff -= 2 * Math.PI;
+            while (diff < -Math.PI) diff += 2 * Math.PI;
+
+            const arcColor = dot > 0 ? 'rgba(74, 222, 128, 0.5)' : dot < 0 ? 'rgba(239, 68, 68, 0.5)' : 'rgba(251, 191, 36, 0.5)';
+            const arcFill = dot > 0 ? 'rgba(74, 222, 128, 0.06)' : dot < 0 ? 'rgba(239, 68, 68, 0.06)' : 'rgba(251, 191, 36, 0.06)';
+
+            ctx.strokeStyle = arcColor;
+            ctx.fillStyle = arcFill;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(CX, CY);
+            ctx.arc(CX, CY, 35, start, start + diff, diff < 0);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(CX, CY, 35, start, start + diff, diff < 0);
+            ctx.stroke();
+
+            let cosAngle = dot / (magA * magB);
+            cosAngle = Math.max(-1, Math.min(1, cosAngle));
+            const angleDeg = Math.acos(cosAngle) * 180 / Math.PI;
+
+            const midAngle = start + diff / 2;
+            ctx.fillStyle = dot > 0 ? '#4ade80' : dot < 0 ? '#ef4444' : '#fbbf24';
+            ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(fmt(angleDeg) + '\u00B0', CX + 55 * Math.cos(midAngle), CY + 55 * Math.sin(midAngle));
+
+            document.getElementById('s4-angle').textContent = fmt(angleDeg) + '\u00B0';
+            document.getElementById('s4-angle').style.color = ctx.fillStyle;
+        }
+
+        // Draw vectors
+        if (magA > 0) drawArrow(ctx, CX, CY, pax, pay, '#22d3ee', 3);
+        if (magB > 0) drawArrow(ctx, CX, CY, pbx, pby, '#a78bfa', 3);
+        drawHandle(ctx, pax, pay, '#22d3ee');
+        drawHandle(ctx, pbx, pby, '#a78bfa');
+
+        // Labels
+        ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillText(`A [${fmt(ax)}, ${fmt(ay)}]`, pax + 12, pay - 10);
+        ctx.fillStyle = '#a78bfa';
+        ctx.fillText(`B [${fmt(bx)}, ${fmt(by)}]`, pbx + 12, pby + 18);
+
+        // Update info
+        document.getElementById('s4-va').textContent = `[${fmt(ax)}, ${fmt(ay)}]`;
+        document.getElementById('s4-vb').textContent = `[${fmt(bx)}, ${fmt(by)}]`;
+        const dotEl = document.getElementById('s4-dot');
+        dotEl.textContent = fmt(dot);
+        if (dot > 0) dotEl.style.color = '#4ade80';
+        else if (dot < 0) dotEl.style.color = '#ef4444';
+        else dotEl.style.color = '#fbbf24';
+    }
+
+    // Drag interaction
+    function getCanvasPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: (clientX - rect.left) * (W / rect.width),
+            y: (clientY - rect.top) * (H / rect.height)
+        };
+    }
+
+    function hitTest(pos, vec) {
+        const sx = CX + vec.x * SCALE;
+        const sy = CY - vec.y * SCALE;
+        return (pos.x - sx) ** 2 + (pos.y - sy) ** 2 < 400;
+    }
+
+    canvas.addEventListener('mousedown', e => {
+        const pos = getCanvasPos(e);
+        if (hitTest(pos, vizA)) dragging = vizA;
+        else if (hitTest(pos, vizB)) dragging = vizB;
+    });
+
+    canvas.addEventListener('touchstart', e => {
+        e.preventDefault();
+        const pos = getCanvasPos(e);
+        if (hitTest(pos, vizA)) dragging = vizA;
+        else if (hitTest(pos, vizB)) dragging = vizB;
+    }, { passive: false });
+
+    function onMove(e) {
+        if (!dragging) return;
+        e.preventDefault();
+        const pos = getCanvasPos(e);
+        dragging.x = Math.round(((pos.x - CX) / SCALE) * 10) / 10;
+        dragging.y = Math.round(((CY - pos.y) / SCALE) * 10) / 10;
+        dragging.x = Math.max(-5, Math.min(5, dragging.x));
+        dragging.y = Math.max(-5, Math.min(5, dragging.y));
+        drawViz();
+    }
+
+    canvas.addEventListener('mousemove', onMove);
+    canvas.addEventListener('touchmove', onMove, { passive: false });
+    function onUp() { dragging = null; }
+    canvas.addEventListener('mouseup', onUp);
+    canvas.addEventListener('mouseleave', onUp);
+    canvas.addEventListener('touchend', onUp);
+
+    // =========================================================
+    // Exercise answer toggle
+    // =========================================================
+    function toggleAnswer(id) {
+        const exercise = document.getElementById(id);
+        const answer = exercise.querySelector('.exercise-answer');
+        const btn = exercise.querySelector('button');
+        answer.classList.toggle('visible');
+        if (answer.classList.contains('visible')) {
+            btn.textContent = 'Hide Answer';
+            btn.classList.add('active');
+        } else {
+            btn.textContent = 'Show Answer';
+            btn.classList.remove('active');
+        }
+    }
+
+    // =========================================================
+    // Init
+    // =========================================================
+    calcDot();
+    drawViz();
+</script>
+
+</body>
+</html>

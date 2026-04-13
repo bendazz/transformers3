@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vector Search</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-bottom: 1px solid #334155;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #e2e8f0;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        section {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        section h2 {
+            color: #38bdf8;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        section h2 .step {
+            background: #38bdf8;
+            color: #0f172a;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 0.15rem 0.6rem;
+            border-radius: 20px;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .callout {
+            background: rgba(56, 189, 248, 0.08);
+            border-left: 3px solid #38bdf8;
+            border-radius: 0 8px 8px 0;
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .callout strong {
+            color: #38bdf8;
+        }
+
+        .callout.try {
+            border-left-color: #a78bfa;
+        }
+
+        .callout.try strong {
+            color: #a78bfa;
+        }
+
+        /* Visualization layout */
+        .viz-wrapper {
+            display: flex;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+            align-items: flex-start;
+        }
+
+        @media (max-width: 850px) {
+            .viz-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        .viz-container {
+            flex-shrink: 0;
+        }
+
+        canvas {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            cursor: crosshair;
+        }
+
+        /* Results panel */
+        .results-panel {
+            flex: 1;
+            min-width: 260px;
+        }
+
+        .results-panel h3 {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.65rem 0.85rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            background: #0f172a;
+            border: 2px solid #334155;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .result-item.matched {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.06);
+        }
+
+        .result-item .doc-swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .result-item .doc-name {
+            flex: 1;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        .result-item .doc-score {
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            font-weight: 600;
+            min-width: 55px;
+            text-align: right;
+        }
+
+        .result-item .doc-rank {
+            background: #334155;
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: 700;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            flex-shrink: 0;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .result-item.matched .doc-rank {
+            background: #4ade80;
+            color: #0f172a;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1.25rem 0;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        select, input[type="number"] {
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            color: #f8fafc;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, input[type="number"]:focus {
+            border-color: #38bdf8;
+        }
+
+        button {
+            background: #334155;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            padding: 0.45rem 1rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #475569;
+            border-color: #64748b;
+        }
+
+        button.primary {
+            background: #0ea5e9;
+            border-color: #0ea5e9;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        button.primary:hover {
+            background: #0284c7;
+        }
+
+        /* Legend */
+        .viz-legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .viz-legend span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-line {
+            width: 16px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        /* Query info */
+        .query-info {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            text-align: center;
+        }
+
+        .query-info .query-label {
+            color: #64748b;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-size: 0.85rem;
+        }
+
+        .query-info .query-vec {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .comparison-table th {
+            background: #0f172a;
+            color: #38bdf8;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 2px solid #334155;
+        }
+
+        .comparison-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #1e293b;
+            color: #cbd5e1;
+        }
+
+        .comparison-table tr:nth-child(even) td {
+            background: rgba(15, 23, 42, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="back-link">&larr; All Tutorials</a>
+    <h1>Vector Search</h1>
+    <p>See how a vector database finds the most relevant documents</p>
+</header>
+
+<main>
+
+    <!-- Section 1: The idea -->
+    <section>
+        <h2><span class="step">1</span> Searching by Similarity</h2>
+        <p>
+            In a vector database, every document is stored as a vector. When a user submits
+            a query, it is also converted into a vector, and the database finds the stored
+            documents whose vectors are <strong>most similar</strong> to the query vector.
+        </p>
+        <p>
+            "Most similar" means the highest <strong>cosine similarity</strong> &mdash; the
+            documents whose vectors point in the most similar direction to the query. The
+            visualization below lets you see this process in action.
+        </p>
+    </section>
+
+    <!-- Section 2: Interactive search visualization -->
+    <section>
+        <h2><span class="step">2</span> Interactive Search</h2>
+        <p>
+            The colored arrows are <strong>documents</strong> stored in the database. The
+            gold arrow is your <strong>query</strong>. Drag the query arrow to search &mdash;
+            the top results are highlighted in green.
+        </p>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Results to return (k):</label>
+                <select id="top-k" onchange="draw()">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3" selected>3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Documents:</label>
+                <select id="num-docs" onchange="regenerateDocs()">
+                    <option value="6">6</option>
+                    <option value="8" selected>8</option>
+                    <option value="10">10</option>
+                    <option value="12">12</option>
+                    <option value="15">15</option>
+                </select>
+            </div>
+            <button onclick="regenerateDocs()">Randomize documents</button>
+        </div>
+
+        <div class="viz-wrapper">
+            <div class="viz-container">
+                <canvas id="search-canvas" width="520" height="520"></canvas>
+                <div class="viz-legend">
+                    <span><span class="legend-line" style="background: #94a3b8;"></span> Document</span>
+                    <span><span class="legend-line" style="background: #4ade80;"></span> Top-k result</span>
+                    <span><span class="legend-dot" style="background: #fbbf24;"></span> Query</span>
+                </div>
+            </div>
+            <div class="results-panel">
+                <h3>Results (ranked by similarity)</h3>
+                <div id="results-list"></div>
+            </div>
+        </div>
+
+        <div class="query-info">
+            <span class="query-label">Query vector: </span>
+            <span class="query-vec" id="query-display">[0, 0]</span>
+        </div>
+
+        <div class="callout try">
+            <strong>Try it:</strong> Move the query arrow to point in the same direction as
+            a cluster of documents and watch those documents light up as the top results.
+            Then slowly rotate the query away &mdash; notice how the scores decrease and
+            different documents take over the top spots. Try changing k to see more or
+            fewer results returned.
+        </div>
+    </section>
+
+    <!-- Section 3: What you're seeing -->
+    <section>
+        <h2><span class="step">3</span> What's Happening Under the Hood</h2>
+        <p>
+            Every time you move the query, the database is performing these steps:
+        </p>
+        <table class="comparison-table">
+            <thead>
+                <tr><th>Step</th><th>Operation</th><th>In this visualization</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Compute cosine similarity between the query and <em>every</em> document</td>
+                    <td>One calculation per arrow</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Sort all documents by their similarity score</td>
+                    <td>The ranked list on the right</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Return the top k results</td>
+                    <td>Green highlighted documents</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>
+            With 8 documents, this is instant. With 1 million documents at 1,536 dimensions each,
+            this brute-force approach requires billions of operations per query. That's why real
+            vector databases use <strong>approximate nearest neighbor (ANN)</strong> indexes &mdash;
+            they organize vectors so that only a small fraction need to be compared,
+            trading a tiny amount of accuracy for enormous speed gains.
+        </p>
+
+        <div class="callout">
+            <strong>Direction, not length:</strong> Notice that the similarity scores don't
+            change when a document's arrow is long or short &mdash; only its direction relative
+            to the query matters. This is cosine similarity at work: it normalizes out the
+            magnitude and compares direction alone.
+        </div>
+    </section>
+
+    <!-- Section 4: Similarity threshold -->
+    <section>
+        <h2><span class="step">4</span> Similarity Thresholds</h2>
+        <p>
+            In practice, returning the top k results isn't always enough. What if
+            none of the documents are actually relevant? A query about quantum physics
+            in a database of cooking recipes might return the "best" matches, but they'd
+            all have very low similarity scores.
+        </p>
+        <p>
+            Many applications add a <strong>similarity threshold</strong> &mdash; only return
+            results above a minimum score. Try it below:
+        </p>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Minimum score:</label>
+                <select id="threshold" onchange="draw()">
+                    <option value="-1">None (return all top-k)</option>
+                    <option value="0">0.0</option>
+                    <option value="0.3">0.3</option>
+                    <option value="0.5">0.5</option>
+                    <option value="0.7">0.7</option>
+                    <option value="0.9">0.9</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="callout try">
+            <strong>Try it:</strong> Set the minimum score to 0.7, then move the query
+            to point between two groups of documents. You'll see that only the documents
+            very closely aligned with the query are highlighted &mdash; documents that are
+            merely "okay" matches get filtered out even if they'd otherwise be in the top k.
+        </div>
+    </section>
+
+    <!-- Section 5: The full picture -->
+    <section>
+        <h2><span class="step">5</span> The Full Picture</h2>
+        <p>
+            You've now seen every layer of a vector database similarity search:
+        </p>
+        <table class="comparison-table">
+            <thead>
+                <tr><th>Tutorial</th><th>Concept</th><th>Role in search</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a href="vectors.html" style="color: #38bdf8;">1. Vectors</a></td>
+                    <td>Magnitude, direction, components</td>
+                    <td>Documents and queries are represented as vectors</td>
+                </tr>
+                <tr>
+                    <td><a href="dot-product.html" style="color: #38bdf8;">2. Dot Product</a></td>
+                    <td>Multiplying and summing components</td>
+                    <td>The core arithmetic inside every similarity calculation</td>
+                </tr>
+                <tr>
+                    <td><a href="cosine-similarity.html" style="color: #38bdf8;">3. Cosine Similarity</a></td>
+                    <td>Normalized dot product</td>
+                    <td>The metric used to rank results by relevance</td>
+                </tr>
+                <tr>
+                    <td><strong>4. Vector Search</strong></td>
+                    <td>Top-k retrieval</td>
+                    <td>Finding and returning the most similar documents</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>
+            In a production system, the vectors would have hundreds of dimensions instead of
+            two, and they'd be generated by an ML embedding model rather than placed by hand.
+            But the fundamental operation is exactly what you've been exploring: compute
+            cosine similarity, rank, return the best matches.
+        </p>
+    </section>
+
+</main>
+
+<script>
+    // =========================================================
+    // State
+    // =========================================================
+    const canvas = document.getElementById('search-canvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const CX = W / 2, CY = H / 2;
+    const SCALE = 42;
+    const MAX_R = 5;
+
+    // Document colors - a palette that's distinct on the dark background
+    const DOC_COLORS = [
+        '#f472b6', '#fb923c', '#a78bfa', '#38bdf8',
+        '#2dd4bf', '#f87171', '#818cf8', '#34d399',
+        '#fbbf24', '#e879f9', '#60a5fa', '#fb7185',
+        '#a3e635', '#c084fc', '#f59e0b'
+    ];
+
+    const MATCH_COLOR = '#4ade80';
+    const QUERY_COLOR = '#fbbf24';
+    const DIM_COLOR = '#4b5563';
+
+    let docs = [];
+    let query = { x: 1, y: 4 };
+    let dragging = false;
+
+    function generateDocs() {
+        const n = parseInt(document.getElementById('num-docs').value);
+        docs = [];
+        for (let i = 0; i < n; i++) {
+            // Generate vectors with some spread, avoid zero vectors
+            let x = 0, y = 0;
+            while (Math.abs(x) < 0.3 && Math.abs(y) < 0.3) {
+                x = (Math.random() * 2 - 1) * MAX_R;
+                y = (Math.random() * 2 - 1) * MAX_R;
+            }
+            // Vary the lengths to show that length doesn't affect cosine similarity
+            const lengthScale = 0.5 + Math.random() * 0.8;
+            docs.push({
+                x: Math.round(x * lengthScale * 10) / 10,
+                y: Math.round(y * lengthScale * 10) / 10,
+                color: DOC_COLORS[i % DOC_COLORS.length],
+                name: 'Doc ' + String.fromCharCode(65 + i)
+            });
+        }
+    }
+
+    function regenerateDocs() {
+        generateDocs();
+        draw();
+    }
+
+    // =========================================================
+    // Cosine similarity
+    // =========================================================
+    function cosineSim(a, b) {
+        const dot = a.x * b.x + a.y * b.y;
+        const magA = Math.sqrt(a.x * a.x + a.y * a.y);
+        const magB = Math.sqrt(b.x * b.x + b.y * b.y);
+        if (magA === 0 || magB === 0) return 0;
+        return dot / (magA * magB);
+    }
+
+    // =========================================================
+    // Drawing
+    // =========================================================
+    function draw() {
+        const k = parseInt(document.getElementById('top-k').value);
+        const threshold = parseFloat(document.getElementById('threshold').value);
+
+        // Compute similarities and rank
+        const scored = docs.map((d, i) => ({
+            doc: d,
+            index: i,
+            sim: cosineSim(query, d)
+        }));
+        scored.sort((a, b) => b.sim - a.sim);
+
+        // Determine which are matched
+        const matchedIndices = new Set();
+        let matchCount = 0;
+        for (const s of scored) {
+            if (matchCount >= k) break;
+            if (s.sim >= threshold) {
+                matchedIndices.add(s.index);
+                matchCount++;
+            }
+        }
+
+        // Clear
+        ctx.clearRect(0, 0, W, H);
+
+        // Grid
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 1;
+        for (let i = -10; i <= 10; i++) {
+            const gx = CX + i * SCALE, gy = CY + i * SCALE;
+            if (gx >= 0 && gx <= W) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
+            if (gy >= 0 && gy <= H) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
+        }
+        ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(0, CY); ctx.lineTo(W, CY); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(CX, 0); ctx.lineTo(CX, H); ctx.stroke();
+
+        // Draw document vectors
+        docs.forEach((d, i) => {
+            const matched = matchedIndices.has(i);
+            const px = CX + d.x * SCALE;
+            const py = CY - d.y * SCALE;
+            const color = matched ? MATCH_COLOR : DIM_COLOR;
+            const width = matched ? 3 : 2;
+
+            drawArrow(px, py, color, width);
+
+            // Label
+            ctx.font = matched ? 'bold 12px Segoe UI, system-ui, sans-serif' : '11px Segoe UI, system-ui, sans-serif';
+            ctx.fillStyle = matched ? MATCH_COLOR : '#64748b';
+            ctx.textAlign = 'left';
+
+            // Offset label to avoid overlap with arrow
+            const mag = Math.sqrt(d.x * d.x + d.y * d.y);
+            if (mag > 0) {
+                const nx = d.x / mag, ny = d.y / mag;
+                ctx.fillText(d.name, px + nx * 8 + 4, py - ny * 8 - 4);
+            }
+
+            // Small colored dot at tip to identify in results list
+            ctx.beginPath();
+            ctx.arc(px, py, matched ? 5 : 4, 0, Math.PI * 2);
+            ctx.fillStyle = d.color;
+            ctx.fill();
+            if (matched) {
+                ctx.strokeStyle = MATCH_COLOR;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        });
+
+        // Draw query vector
+        const qpx = CX + query.x * SCALE;
+        const qpy = CY - query.y * SCALE;
+        drawArrow(qpx, qpy, QUERY_COLOR, 3.5);
+
+        // Query handle
+        ctx.beginPath();
+        ctx.arc(qpx, qpy, 10, 0, Math.PI * 2);
+        ctx.fillStyle = QUERY_COLOR;
+        ctx.fill();
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Query label
+        ctx.fillStyle = QUERY_COLOR;
+        ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('Query', qpx + 14, qpy - 12);
+
+        // Update results panel
+        updateResults(scored, matchedIndices);
+
+        // Update query display
+        document.getElementById('query-display').textContent =
+            `[${fmt(query.x)}, ${fmt(query.y)}]`;
+    }
+
+    function drawArrow(px, py, color, width) {
+        const angle = Math.atan2(py - CY, px - CX);
+        const headLen = 12;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(CX, CY);
+        ctx.lineTo(px, py);
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px - headLen * Math.cos(angle - 0.4), py - headLen * Math.sin(angle - 0.4));
+        ctx.lineTo(px - headLen * Math.cos(angle + 0.4), py - headLen * Math.sin(angle + 0.4));
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function updateResults(scored, matchedIndices) {
+        const container = document.getElementById('results-list');
+        container.innerHTML = '';
+        scored.forEach((s, rank) => {
+            const matched = matchedIndices.has(s.index);
+            const div = document.createElement('div');
+            div.className = 'result-item' + (matched ? ' matched' : '');
+
+            const scoreColor = s.sim > 0.7 ? '#4ade80' : s.sim > 0.3 ? '#eab308' : s.sim > -0.3 ? '#f97316' : '#ef4444';
+
+            div.innerHTML = `
+                <div class="doc-rank">${rank + 1}</div>
+                <div class="doc-swatch" style="background: ${s.doc.color};"></div>
+                <div class="doc-name">${s.doc.name}</div>
+                <div class="doc-score" style="color: ${scoreColor}">${s.sim.toFixed(4)}</div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function fmt(n) {
+        const r = Math.round(n * 100) / 100;
+        return r === -0 ? '0' : String(r);
+    }
+
+    // =========================================================
+    // Drag interaction
+    // =========================================================
+    function getCanvasPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: (clientX - rect.left) * (W / rect.width),
+            y: (clientY - rect.top) * (H / rect.height)
+        };
+    }
+
+    function hitQuery(pos) {
+        const sx = CX + query.x * SCALE;
+        const sy = CY - query.y * SCALE;
+        return (pos.x - sx) ** 2 + (pos.y - sy) ** 2 < 600;
+    }
+
+    canvas.addEventListener('mousedown', e => {
+        const pos = getCanvasPos(e);
+        if (hitQuery(pos)) {
+            dragging = true;
+        } else {
+            // Click anywhere to move query
+            query.x = Math.round(((pos.x - CX) / SCALE) * 100) / 100;
+            query.y = Math.round(((CY - pos.y) / SCALE) * 100) / 100;
+            query.x = Math.max(-MAX_R, Math.min(MAX_R, query.x));
+            query.y = Math.max(-MAX_R, Math.min(MAX_R, query.y));
+            dragging = true;
+            draw();
+        }
+    });
+
+    canvas.addEventListener('touchstart', e => {
+        e.preventDefault();
+        const pos = getCanvasPos(e);
+        query.x = Math.round(((pos.x - CX) / SCALE) * 100) / 100;
+        query.y = Math.round(((CY - pos.y) / SCALE) * 100) / 100;
+        query.x = Math.max(-MAX_R, Math.min(MAX_R, query.x));
+        query.y = Math.max(-MAX_R, Math.min(MAX_R, query.y));
+        dragging = true;
+        draw();
+    }, { passive: false });
+
+    function onMove(e) {
+        if (!dragging) return;
+        e.preventDefault();
+        const pos = getCanvasPos(e);
+        query.x = Math.round(((pos.x - CX) / SCALE) * 100) / 100;
+        query.y = Math.round(((CY - pos.y) / SCALE) * 100) / 100;
+        query.x = Math.max(-MAX_R, Math.min(MAX_R, query.x));
+        query.y = Math.max(-MAX_R, Math.min(MAX_R, query.y));
+        draw();
+    }
+
+    canvas.addEventListener('mousemove', onMove);
+    canvas.addEventListener('touchmove', onMove, { passive: false });
+
+    function onUp() { dragging = false; }
+    canvas.addEventListener('mouseup', onUp);
+    canvas.addEventListener('mouseleave', onUp);
+    canvas.addEventListener('touchend', onUp);
+
+    // =========================================================
+    // Init
+    // =========================================================
+    generateDocs();
+    draw();
+</script>
+
+</body>
+</html>

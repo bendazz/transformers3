@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introduction to Vectors</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-bottom: 1px solid #334155;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #e2e8f0;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        section {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        section h2 {
+            color: #38bdf8;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        section h2 .step {
+            background: #38bdf8;
+            color: #0f172a;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 0.15rem 0.6rem;
+            border-radius: 20px;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .callout {
+            background: rgba(56, 189, 248, 0.08);
+            border-left: 3px solid #38bdf8;
+            border-radius: 0 8px 8px 0;
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .callout strong {
+            color: #38bdf8;
+        }
+
+        .callout.try {
+            border-left-color: #a78bfa;
+        }
+
+        .callout.try strong {
+            color: #a78bfa;
+        }
+
+        /* Canvas containers */
+        .viz-container {
+            display: flex;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+
+        canvas {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1.25rem 0;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            min-width: fit-content;
+        }
+
+        input[type="number"] {
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            color: #f8fafc;
+            padding: 0.4rem 0.6rem;
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+            width: 70px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus {
+            border-color: #38bdf8;
+        }
+
+        input[type="range"] {
+            accent-color: #38bdf8;
+            width: 120px;
+        }
+
+        button {
+            background: #334155;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            padding: 0.45rem 1rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #475569;
+            border-color: #64748b;
+        }
+
+        button.primary {
+            background: #0ea5e9;
+            border-color: #0ea5e9;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        button.primary:hover {
+            background: #0284c7;
+        }
+
+        .info-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+        }
+
+        .info-item {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-label {
+            color: #64748b;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-size: 0.85rem;
+        }
+
+        .info-value {
+            color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .vec-color-a { color: #22d3ee; }
+        .vec-color-b { color: #a78bfa; }
+        .vec-color-sum { color: #fbbf24; }
+
+        /* Notation example */
+        .notation-block {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 1.05rem;
+            line-height: 2.2;
+        }
+
+        .notation-block .notation-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .notation-block .notation-label {
+            color: #64748b;
+            min-width: 180px;
+            font-size: 0.9rem;
+        }
+
+        .notation-block .notation-value {
+            font-family: 'Georgia', serif;
+            font-style: italic;
+            color: #f8fafc;
+        }
+
+        /* Legend */
+        .viz-legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .viz-legend span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* Comparison table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .comparison-table th {
+            background: #0f172a;
+            color: #38bdf8;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 2px solid #334155;
+        }
+
+        .comparison-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #1e293b;
+            color: #cbd5e1;
+        }
+
+        .comparison-table tr:nth-child(even) td {
+            background: rgba(15, 23, 42, 0.3);
+        }
+
+        /* Exercises */
+        .exercise {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .exercise-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .exercise-number {
+            background: #334155;
+            color: #e2e8f0;
+            font-weight: 700;
+            font-size: 0.85rem;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .exercise-type {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.15rem 0.65rem;
+            border-radius: 20px;
+        }
+
+        .exercise-type.mag-type {
+            background: rgba(34, 211, 238, 0.12);
+            color: #22d3ee;
+        }
+
+        .exercise-type.add-type {
+            background: rgba(167, 139, 250, 0.12);
+            color: #a78bfa;
+        }
+
+        .exercise-prompt {
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+
+        .exercise-answer {
+            margin-top: 1rem;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.4s ease, opacity 0.3s ease, margin-top 0.3s ease;
+        }
+
+        .exercise-answer.visible {
+            max-height: 400px;
+            opacity: 1;
+        }
+
+        .exercise button {
+            transition: all 0.2s;
+        }
+
+        .exercise button.active {
+            background: #475569;
+            border-color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="back-link">&larr; All Tutorials</a>
+    <h1>Introduction to Vectors</h1>
+    <p>Understanding vectors visually before we use them in databases</p>
+</header>
+
+<main>
+
+    <!-- Section 1: What is a vector? -->
+    <section>
+        <h2><span class="step">1</span> What Is a Vector?</h2>
+        <p>
+            A vector is a quantity that has both a <strong>magnitude</strong> (length) and a
+            <strong>direction</strong>. You can think of it as an arrow that points from one
+            place to another.
+        </p>
+        <p>
+            We write a 2D vector as a pair of numbers. For example, the vector
+            <strong>[3, 2]</strong> means "go 3 units in the x direction and 2 units in the
+            y direction."
+        </p>
+        <div class="notation-block">
+            <div class="notation-row">
+                <span class="notation-label">A 2D vector:</span>
+                <span class="notation-value"><b>v</b> = [x, y]</span>
+            </div>
+            <div class="notation-row">
+                <span class="notation-label">Example:</span>
+                <span class="notation-value"><b>v</b> = [3, 2]</span>
+            </div>
+            <div class="notation-row">
+                <span class="notation-label">A 3D vector:</span>
+                <span class="notation-value"><b>v</b> = [x, y, z]</span>
+            </div>
+            <div class="notation-row">
+                <span class="notation-label">An n-dimensional vector:</span>
+                <span class="notation-value"><b>v</b> = [v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>n</sub>]</span>
+            </div>
+        </div>
+        <p>
+            Each number in the vector is called a <strong>component</strong>. A 2D vector has
+            2 components, a 3D vector has 3, and so on. In vector databases, vectors often have
+            hundreds or thousands of components &mdash; but the principles are the same.
+        </p>
+    </section>
+
+    <!-- Section 2: Drawing a single vector -->
+    <section>
+        <h2><span class="step">2</span> Drawing a Vector</h2>
+        <p>
+            We draw a vector as an <strong>arrow from the origin</strong> (the center of the grid)
+            to a point. The x component controls how far right or left the arrow goes. The y component
+            controls how far up or down.
+        </p>
+        <p>
+            Adjust the x and y values below and watch the vector change on the grid.
+        </p>
+
+        <div class="controls">
+            <div class="control-group">
+                <label class="vec-color-a">x:</label>
+                <input type="range" id="s2-x" min="-5" max="5" step="0.5" value="3"
+                       oninput="document.getElementById('s2-xn').value=this.value; drawS2()">
+                <input type="number" id="s2-xn" step="0.5" value="3" style="width:65px"
+                       oninput="document.getElementById('s2-x').value=this.value; drawS2()">
+            </div>
+            <div class="control-group">
+                <label class="vec-color-a">y:</label>
+                <input type="range" id="s2-y" min="-5" max="5" step="0.5" value="2"
+                       oninput="document.getElementById('s2-yn').value=this.value; drawS2()">
+                <input type="number" id="s2-yn" step="0.5" value="2" style="width:65px"
+                       oninput="document.getElementById('s2-y').value=this.value; drawS2()">
+            </div>
+        </div>
+
+        <div class="viz-container">
+            <canvas id="s2-canvas" width="420" height="420"></canvas>
+        </div>
+
+        <div class="info-row">
+            <div class="info-item">
+                <span class="info-label">Vector:</span>
+                <span class="info-value vec-color-a" id="s2-vec">[3, 2]</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Magnitude:</span>
+                <span class="info-value" id="s2-mag">3.6056</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Angle:</span>
+                <span class="info-value" id="s2-angle">33.7&deg;</span>
+            </div>
+        </div>
+
+        <div class="callout try">
+            <strong>Try it:</strong> Set x to 0 and change y. The vector points straight up or
+            down. Now set y to 0 and change x. The vector points left or right. What happens
+            when both are 0?
+        </div>
+    </section>
+
+    <!-- Section 3: Magnitude -->
+    <section>
+        <h2><span class="step">3</span> Magnitude (Length of a Vector)</h2>
+        <p>
+            The <strong>magnitude</strong> of a vector is its length. For a 2D vector [x, y],
+            we calculate it using the Pythagorean theorem:
+        </p>
+        <div class="notation-block" style="text-align: center;">
+            <span class="notation-value">
+                ||<b>v</b>|| = &radic;(x&sup2; + y&sup2;)
+            </span>
+        </div>
+        <p>
+            This works because the vector, its x component, and its y component form a
+            <strong>right triangle</strong>. The magnitude is the hypotenuse.
+        </p>
+        <p>
+            Adjust the vector below. The dashed lines show the right triangle formed by the
+            components, and the magnitude is computed live.
+        </p>
+
+        <div class="controls">
+            <div class="control-group">
+                <label class="vec-color-a">x:</label>
+                <input type="range" id="s3-x" min="-5" max="5" step="0.5" value="3"
+                       oninput="document.getElementById('s3-xn').value=this.value; drawS3()">
+                <input type="number" id="s3-xn" step="0.5" value="3" style="width:65px"
+                       oninput="document.getElementById('s3-x').value=this.value; drawS3()">
+            </div>
+            <div class="control-group">
+                <label class="vec-color-a">y:</label>
+                <input type="range" id="s3-y" min="-5" max="5" step="0.5" value="4"
+                       oninput="document.getElementById('s3-yn').value=this.value; drawS3()">
+                <input type="number" id="s3-yn" step="0.5" value="4" style="width:65px"
+                       oninput="document.getElementById('s3-y').value=this.value; drawS3()">
+            </div>
+        </div>
+
+        <div class="viz-container">
+            <canvas id="s3-canvas" width="420" height="420"></canvas>
+        </div>
+
+        <div class="info-row">
+            <div class="info-item">
+                <span class="info-label">x&sup2; + y&sup2; =</span>
+                <span class="info-value" id="s3-sum">9 + 16 = 25</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">&radic;(x&sup2; + y&sup2;) =</span>
+                <span class="info-value" id="s3-mag">&radic;25 = 5</span>
+            </div>
+        </div>
+
+        <div class="callout">
+            <strong>Key idea:</strong> Two vectors can point in the same direction but have
+            different magnitudes. For example, [1, 1] and [3, 3] point the same way, but [3, 3]
+            is three times longer. This distinction between direction and magnitude is
+            fundamental to understanding cosine similarity later.
+        </div>
+    </section>
+
+    <!-- Section 4: Two vectors -->
+    <section>
+        <h2><span class="step">4</span> Comparing Two Vectors</h2>
+        <p>
+            When we have two vectors, we can compare them by looking at the
+            <strong>angle</strong> between them. Vectors that point in similar directions have a
+            small angle between them. Vectors that point in very different directions have a
+            large angle.
+        </p>
+
+        <div class="controls">
+            <div class="control-group">
+                <label class="vec-color-a">A &mdash; x:</label>
+                <input type="range" id="s4-ax" min="-5" max="5" step="0.5" value="4"
+                       oninput="document.getElementById('s4-axn').value=this.value; drawS4()">
+                <input type="number" id="s4-axn" step="0.5" value="4" style="width:65px"
+                       oninput="document.getElementById('s4-ax').value=this.value; drawS4()">
+            </div>
+            <div class="control-group">
+                <label class="vec-color-a">y:</label>
+                <input type="range" id="s4-ay" min="-5" max="5" step="0.5" value="3"
+                       oninput="document.getElementById('s4-ayn').value=this.value; drawS4()">
+                <input type="number" id="s4-ayn" step="0.5" value="3" style="width:65px"
+                       oninput="document.getElementById('s4-ay').value=this.value; drawS4()">
+            </div>
+        </div>
+        <div class="controls">
+            <div class="control-group">
+                <label class="vec-color-b">B &mdash; x:</label>
+                <input type="range" id="s4-bx" min="-5" max="5" step="0.5" value="1"
+                       oninput="document.getElementById('s4-bxn').value=this.value; drawS4()">
+                <input type="number" id="s4-bxn" step="0.5" value="1" style="width:65px"
+                       oninput="document.getElementById('s4-bx').value=this.value; drawS4()">
+            </div>
+            <div class="control-group">
+                <label class="vec-color-b">y:</label>
+                <input type="range" id="s4-by" min="-5" max="5" step="0.5" value="4"
+                       oninput="document.getElementById('s4-byn').value=this.value; drawS4()">
+                <input type="number" id="s4-byn" step="0.5" value="4" style="width:65px"
+                       oninput="document.getElementById('s4-by').value=this.value; drawS4()">
+            </div>
+        </div>
+
+        <div class="viz-container">
+            <canvas id="s4-canvas" width="420" height="420"></canvas>
+        </div>
+        <div class="viz-legend">
+            <span><span class="legend-dot" style="background: #22d3ee;"></span> Vector A</span>
+            <span><span class="legend-dot" style="background: #a78bfa;"></span> Vector B</span>
+        </div>
+
+        <div class="info-row">
+            <div class="info-item">
+                <span class="info-label">Vector A:</span>
+                <span class="info-value vec-color-a" id="s4-va">[4, 3]</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Vector B:</span>
+                <span class="info-value vec-color-b" id="s4-vb">[1, 4]</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Angle between:</span>
+                <span class="info-value" id="s4-angle" style="color: #fbbf24;">45.0&deg;</span>
+            </div>
+        </div>
+
+        <div class="callout try">
+            <strong>Try it:</strong> Make both vectors point in the same direction (e.g., A = [3, 2]
+            and B = [3, 2]). The angle becomes 0&deg;. Now make them point in opposite directions
+            (e.g., A = [3, 2] and B = [-3, -2]). The angle becomes 180&deg;. Try making them
+            perpendicular (A = [3, 0] and B = [0, 3]) &mdash; the angle is 90&deg;.
+        </div>
+    </section>
+
+    <!-- Section 5: Vector addition -->
+    <section>
+        <h2><span class="step">5</span> Vector Addition</h2>
+        <p>
+            Vectors can be added together by adding their corresponding components:
+        </p>
+        <div class="notation-block" style="text-align: center;">
+            <span class="notation-value">
+                [a<sub>x</sub>, a<sub>y</sub>] + [b<sub>x</sub>, b<sub>y</sub>]
+                = [a<sub>x</sub> + b<sub>x</sub>, a<sub>y</sub> + b<sub>y</sub>]
+            </span>
+        </div>
+        <p>
+            Visually, you can think of this as placing the second vector at the tip of the first.
+            The result (shown in gold) goes from the origin to where you end up.
+        </p>
+
+        <div class="controls">
+            <div class="control-group">
+                <label class="vec-color-a">A &mdash; x:</label>
+                <input type="range" id="s5-ax" min="-5" max="5" step="0.5" value="3"
+                       oninput="document.getElementById('s5-axn').value=this.value; drawS5()">
+                <input type="number" id="s5-axn" step="0.5" value="3" style="width:65px"
+                       oninput="document.getElementById('s5-ax').value=this.value; drawS5()">
+            </div>
+            <div class="control-group">
+                <label class="vec-color-a">y:</label>
+                <input type="range" id="s5-ay" min="-5" max="5" step="0.5" value="1"
+                       oninput="document.getElementById('s5-ayn').value=this.value; drawS5()">
+                <input type="number" id="s5-ayn" step="0.5" value="1" style="width:65px"
+                       oninput="document.getElementById('s5-ay').value=this.value; drawS5()">
+            </div>
+        </div>
+        <div class="controls">
+            <div class="control-group">
+                <label class="vec-color-b">B &mdash; x:</label>
+                <input type="range" id="s5-bx" min="-5" max="5" step="0.5" value="1"
+                       oninput="document.getElementById('s5-bxn').value=this.value; drawS5()">
+                <input type="number" id="s5-bxn" step="0.5" value="1" style="width:65px"
+                       oninput="document.getElementById('s5-bx').value=this.value; drawS5()">
+            </div>
+            <div class="control-group">
+                <label class="vec-color-b">y:</label>
+                <input type="range" id="s5-by" min="-5" max="5" step="0.5" value="3"
+                       oninput="document.getElementById('s5-byn').value=this.value; drawS5()">
+                <input type="number" id="s5-byn" step="0.5" value="3" style="width:65px"
+                       oninput="document.getElementById('s5-by').value=this.value; drawS5()">
+            </div>
+        </div>
+
+        <div class="viz-container">
+            <canvas id="s5-canvas" width="420" height="420"></canvas>
+        </div>
+        <div class="viz-legend">
+            <span><span class="legend-dot" style="background: #22d3ee;"></span> Vector A</span>
+            <span><span class="legend-dot" style="background: #a78bfa;"></span> Vector B</span>
+            <span><span class="legend-dot" style="background: #fbbf24;"></span> A + B</span>
+        </div>
+
+        <div class="info-row">
+            <div class="info-item">
+                <span class="info-value vec-color-a" id="s5-va">[3, 1]</span>
+                <span class="info-label">+</span>
+                <span class="info-value vec-color-b" id="s5-vb">[1, 3]</span>
+                <span class="info-label">=</span>
+                <span class="info-value vec-color-sum" id="s5-vs">[4, 4]</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 6: Higher dimensions -->
+    <section>
+        <h2><span class="step">6</span> Beyond 2D</h2>
+        <p>
+            Everything we've seen works in any number of dimensions. We can only
+            <em>draw</em> vectors in 2D or 3D, but the math generalizes perfectly:
+        </p>
+        <table class="comparison-table">
+            <thead>
+                <tr><th>Operation</th><th>2D</th><th>n-dimensional</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Vector</td>
+                    <td>[x, y]</td>
+                    <td>[v<sub>1</sub>, v<sub>2</sub>, ..., v<sub>n</sub>]</td>
+                </tr>
+                <tr>
+                    <td>Magnitude</td>
+                    <td>&radic;(x&sup2; + y&sup2;)</td>
+                    <td>&radic;(v<sub>1</sub>&sup2; + v<sub>2</sub>&sup2; + ... + v<sub>n</sub>&sup2;)</td>
+                </tr>
+                <tr>
+                    <td>Addition</td>
+                    <td>[a<sub>x</sub>+b<sub>x</sub>, a<sub>y</sub>+b<sub>y</sub>]</td>
+                    <td>[a<sub>1</sub>+b<sub>1</sub>, a<sub>2</sub>+b<sub>2</sub>, ..., a<sub>n</sub>+b<sub>n</sub>]</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>
+            In a vector database, each document is represented as a vector with hundreds or
+            thousands of dimensions. We can't visualize a 1,536-dimensional vector, but we can
+            still compute its magnitude, add it to other vectors, and &mdash; most importantly &mdash;
+            measure how <strong>similar</strong> two vectors are.
+        </p>
+        <div class="callout">
+            <strong>Coming up next:</strong> In the next tutorial, we'll learn about
+            <strong>cosine similarity</strong> &mdash; a way to measure how similar two vectors are
+            by looking at the angle between them, regardless of their length. This is the
+            core operation behind vector database search.
+        </div>
+    </section>
+
+    <!-- Section 7: Exercises -->
+    <section>
+        <h2><span class="step">7</span> Practice Exercises</h2>
+        <p>
+            Try these on paper first, then click <strong>Show Answer</strong> to check your work.
+            You can use the interactive tools above to verify visually.
+        </p>
+
+        <div class="exercise" id="ex1">
+            <div class="exercise-header">
+                <span class="exercise-number">1</span>
+                <span class="exercise-type mag-type">Magnitude</span>
+            </div>
+            <div class="exercise-prompt">
+                Find the magnitude of the vector <strong>[3, 4]</strong>.
+            </div>
+            <button onclick="toggleAnswer('ex1')">Show Answer</button>
+            <div class="exercise-answer">
+                <div class="calc-steps" style="margin: 0;">
+                    <div class="calc-label">Solution:</div>
+                    <div class="calc-line">||v|| = &radic;(3&sup2; + 4&sup2;)</div>
+                    <div class="calc-line">= &radic;(9 + 16)</div>
+                    <div class="calc-line">= &radic;25</div>
+                    <div class="calc-line"><span class="result-color">= 5</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="exercise" id="ex2">
+            <div class="exercise-header">
+                <span class="exercise-number">2</span>
+                <span class="exercise-type add-type">Addition</span>
+            </div>
+            <div class="exercise-prompt">
+                Add the vectors <strong class="vec-color-a">[2, 5]</strong> and
+                <strong class="vec-color-b">[-1, 3]</strong>.
+            </div>
+            <button onclick="toggleAnswer('ex2')">Show Answer</button>
+            <div class="exercise-answer">
+                <div class="calc-steps" style="margin: 0;">
+                    <div class="calc-label">Solution:</div>
+                    <div class="calc-line"><span class="mag-a-color">[2, 5]</span> + <span class="mag-b-color">[-1, 3]</span></div>
+                    <div class="calc-line">= [2 + (-1), 5 + 3]</div>
+                    <div class="calc-line"><span class="result-color">= [1, 8]</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="exercise" id="ex3">
+            <div class="exercise-header">
+                <span class="exercise-number">3</span>
+                <span class="exercise-type mag-type">Magnitude</span>
+            </div>
+            <div class="exercise-prompt">
+                Find the magnitude of the vector <strong>[1, 2, 2]</strong>.
+            </div>
+            <button onclick="toggleAnswer('ex3')">Show Answer</button>
+            <div class="exercise-answer">
+                <div class="calc-steps" style="margin: 0;">
+                    <div class="calc-label">Solution:</div>
+                    <div class="calc-line">||v|| = &radic;(1&sup2; + 2&sup2; + 2&sup2;)</div>
+                    <div class="calc-line">= &radic;(1 + 4 + 4)</div>
+                    <div class="calc-line">= &radic;9</div>
+                    <div class="calc-line"><span class="result-color">= 3</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="exercise" id="ex4">
+            <div class="exercise-header">
+                <span class="exercise-number">4</span>
+                <span class="exercise-type add-type">Addition</span>
+            </div>
+            <div class="exercise-prompt">
+                Add the vectors <strong class="vec-color-a">[4, -2, 1]</strong> and
+                <strong class="vec-color-b">[-3, 5, 2]</strong>.
+            </div>
+            <button onclick="toggleAnswer('ex4')">Show Answer</button>
+            <div class="exercise-answer">
+                <div class="calc-steps" style="margin: 0;">
+                    <div class="calc-label">Solution:</div>
+                    <div class="calc-line"><span class="mag-a-color">[4, -2, 1]</span> + <span class="mag-b-color">[-3, 5, 2]</span></div>
+                    <div class="calc-line">= [4 + (-3), -2 + 5, 1 + 2]</div>
+                    <div class="calc-line"><span class="result-color">= [1, 3, 3]</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="exercise" id="ex5">
+            <div class="exercise-header">
+                <span class="exercise-number">5</span>
+                <span class="exercise-type mag-type">Magnitude</span>
+            </div>
+            <div class="exercise-prompt">
+                Find the magnitude of the vector <strong>[5, -12]</strong>.
+            </div>
+            <button onclick="toggleAnswer('ex5')">Show Answer</button>
+            <div class="exercise-answer">
+                <div class="calc-steps" style="margin: 0;">
+                    <div class="calc-label">Solution:</div>
+                    <div class="calc-line">||v|| = &radic;(5&sup2; + (-12)&sup2;)</div>
+                    <div class="calc-line">= &radic;(25 + 144)</div>
+                    <div class="calc-line">= &radic;169</div>
+                    <div class="calc-line"><span class="result-color">= 13</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="exercise" id="ex6">
+            <div class="exercise-header">
+                <span class="exercise-number">6</span>
+                <span class="exercise-type add-type">Addition</span>
+            </div>
+            <div class="exercise-prompt">
+                Add the vectors <strong class="vec-color-a">[3, -1]</strong> and
+                <strong class="vec-color-b">[-3, 1]</strong>. What do you notice about
+                the result?
+            </div>
+            <button onclick="toggleAnswer('ex6')">Show Answer</button>
+            <div class="exercise-answer">
+                <div class="calc-steps" style="margin: 0;">
+                    <div class="calc-label">Solution:</div>
+                    <div class="calc-line"><span class="mag-a-color">[3, -1]</span> + <span class="mag-b-color">[-3, 1]</span></div>
+                    <div class="calc-line">= [3 + (-3), -1 + 1]</div>
+                    <div class="calc-line"><span class="result-color">= [0, 0]</span></div>
+                    <div class="calc-label" style="margin-top: 0.75rem;">Insight:</div>
+                    <div class="calc-line">The result is the <strong>zero vector</strong>.
+                        This happens because [&minus;3, 1] is the exact opposite of [3, &minus;1].
+                        Adding a vector to its opposite always gives [0, 0].</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="exercise" id="ex7">
+            <div class="exercise-header">
+                <span class="exercise-number">7</span>
+                <span class="exercise-type mag-type">Magnitude</span>
+            </div>
+            <div class="exercise-prompt">
+                Find the magnitude of the vector <strong>[2, -3, 6, 1]</strong>.
+                <em>(4 dimensions!)</em>
+            </div>
+            <button onclick="toggleAnswer('ex7')">Show Answer</button>
+            <div class="exercise-answer">
+                <div class="calc-steps" style="margin: 0;">
+                    <div class="calc-label">Solution:</div>
+                    <div class="calc-line">||v|| = &radic;(2&sup2; + (-3)&sup2; + 6&sup2; + 1&sup2;)</div>
+                    <div class="calc-line">= &radic;(4 + 9 + 36 + 1)</div>
+                    <div class="calc-line">= &radic;50</div>
+                    <div class="calc-line"><span class="result-color">= 5&radic;2 &approx; 7.0711</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="exercise" id="ex8">
+            <div class="exercise-header">
+                <span class="exercise-number">8</span>
+                <span class="exercise-type add-type">Addition</span>
+            </div>
+            <div class="exercise-prompt">
+                Add the vectors <strong class="vec-color-a">[1, 0, -2, 4]</strong> and
+                <strong class="vec-color-b">[3, -1, 2, -4]</strong>, then find the
+                <strong>magnitude</strong> of the result.
+            </div>
+            <button onclick="toggleAnswer('ex8')">Show Answer</button>
+            <div class="exercise-answer">
+                <div class="calc-steps" style="margin: 0;">
+                    <div class="calc-label">Step 1: Add the vectors</div>
+                    <div class="calc-line"><span class="mag-a-color">[1, 0, -2, 4]</span> + <span class="mag-b-color">[3, -1, 2, -4]</span></div>
+                    <div class="calc-line">= [1+3, 0+(-1), -2+2, 4+(-4)]</div>
+                    <div class="calc-line"><span class="result-color">= [4, -1, 0, 0]</span></div>
+                    <div class="calc-label">Step 2: Find the magnitude</div>
+                    <div class="calc-line">||v|| = &radic;(4&sup2; + (-1)&sup2; + 0&sup2; + 0&sup2;)</div>
+                    <div class="calc-line">= &radic;(16 + 1 + 0 + 0)</div>
+                    <div class="calc-line">= &radic;17</div>
+                    <div class="calc-line"><span class="result-color">&approx; 4.1231</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<script>
+    // =========================================================
+    // Shared drawing utilities
+    // =========================================================
+    function drawGrid(ctx, w, h, cx, cy, scale) {
+        ctx.clearRect(0, 0, w, h);
+
+        // Grid lines
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 1;
+        for (let i = -10; i <= 10; i++) {
+            const gx = cx + i * scale;
+            const gy = cy + i * scale;
+            if (gx >= 0 && gx <= w) {
+                ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke();
+            }
+            if (gy >= 0 && gy <= h) {
+                ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
+            }
+        }
+
+        // Axes
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
+
+        // Tick labels
+        ctx.fillStyle = '#475569';
+        ctx.font = '11px Courier New, monospace';
+        ctx.textAlign = 'center';
+        for (let i = -5; i <= 5; i++) {
+            if (i === 0) continue;
+            ctx.fillText(i, cx + i * scale, cy + 16);
+            ctx.fillText(i, cx - 18, cy - i * scale + 4);
+        }
+
+        // Axis labels
+        ctx.fillStyle = '#64748b';
+        ctx.font = '13px Segoe UI, system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('x', w - 18, cy - 8);
+        ctx.textAlign = 'center';
+        ctx.fillText('y', cx + 14, 16);
+    }
+
+    function drawArrow(ctx, x1, y1, x2, y2, color, width) {
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+        const headLen = 14;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - headLen * Math.cos(angle - 0.4), y2 - headLen * Math.sin(angle - 0.4));
+        ctx.lineTo(x2 - headLen * Math.cos(angle + 0.4), y2 - headLen * Math.sin(angle + 0.4));
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function drawPoint(ctx, x, y, color) {
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+    }
+
+    function fmt(n) {
+        const r = Math.round(n * 10000) / 10000;
+        return r === -0 ? '0' : String(r);
+    }
+
+    const SCALE = 36;
+
+    // =========================================================
+    // Section 2: Drawing a single vector
+    // =========================================================
+    function drawS2() {
+        const canvas = document.getElementById('s2-canvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+        const CX = W / 2, CY = H / 2;
+        drawGrid(ctx, W, H, CX, CY, SCALE);
+
+        const x = parseFloat(document.getElementById('s2-x').value) || 0;
+        const y = parseFloat(document.getElementById('s2-y').value) || 0;
+        const px = CX + x * SCALE;
+        const py = CY - y * SCALE;
+
+        // Draw vector
+        if (x !== 0 || y !== 0) {
+            drawArrow(ctx, CX, CY, px, py, '#22d3ee', 3);
+        }
+        drawPoint(ctx, px, py, '#22d3ee');
+
+        // Label at tip
+        ctx.fillStyle = '#22d3ee';
+        ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(`[${fmt(x)}, ${fmt(y)}]`, px + 10, py - 10);
+
+        // Update info
+        const mag = Math.sqrt(x * x + y * y);
+        const angle = Math.atan2(y, x) * 180 / Math.PI;
+        document.getElementById('s2-vec').textContent = `[${fmt(x)}, ${fmt(y)}]`;
+        document.getElementById('s2-mag').textContent = fmt(mag);
+        document.getElementById('s2-angle').textContent = fmt(angle) + '\u00B0';
+    }
+
+    // =========================================================
+    // Section 3: Magnitude with triangle
+    // =========================================================
+    function drawS3() {
+        const canvas = document.getElementById('s3-canvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+        const CX = W / 2, CY = H / 2;
+        drawGrid(ctx, W, H, CX, CY, SCALE);
+
+        const x = parseFloat(document.getElementById('s3-x').value) || 0;
+        const y = parseFloat(document.getElementById('s3-y').value) || 0;
+        const px = CX + x * SCALE;
+        const py = CY - y * SCALE;
+
+        // Draw dashed triangle
+        if (x !== 0 && y !== 0) {
+            ctx.setLineDash([6, 4]);
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 1.5;
+
+            // Horizontal leg
+            ctx.beginPath();
+            ctx.moveTo(CX, CY);
+            ctx.lineTo(px, CY);
+            ctx.stroke();
+
+            // Vertical leg
+            ctx.beginPath();
+            ctx.moveTo(px, CY);
+            ctx.lineTo(px, py);
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+
+            // Label x component
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '12px Courier New, monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(`x = ${fmt(x)}`, (CX + px) / 2, CY + (y >= 0 ? 28 : -12));
+
+            // Label y component
+            ctx.save();
+            ctx.translate(px + (x >= 0 ? 20 : -20), (CY + py) / 2);
+            ctx.fillText(`y = ${fmt(y)}`, 0, 0);
+            ctx.restore();
+
+            // Right angle marker
+            const size = 8;
+            const sx = x > 0 ? -1 : 1;
+            const sy = y > 0 ? 1 : -1;
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(px + sx * size, CY);
+            ctx.lineTo(px + sx * size, CY + sy * size);
+            ctx.lineTo(px, CY + sy * size);
+            ctx.stroke();
+        }
+
+        // Draw vector
+        if (x !== 0 || y !== 0) {
+            drawArrow(ctx, CX, CY, px, py, '#22d3ee', 3);
+        }
+        drawPoint(ctx, px, py, '#22d3ee');
+
+        // Magnitude label along the vector
+        const mag = Math.sqrt(x * x + y * y);
+        if (mag > 0) {
+            const mx = (CX + px) / 2;
+            const my = (CY + py) / 2;
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+            const offsetX = y >= 0 ? -14 : 14;
+            const offsetY = y >= 0 ? 6 : -6;
+            ctx.textAlign = 'center';
+            ctx.fillText(fmt(mag), mx + offsetX, my + offsetY);
+        }
+
+        // Update info
+        const x2 = Math.round(x * x * 10000) / 10000;
+        const y2 = Math.round(y * y * 10000) / 10000;
+        const sum = Math.round((x2 + y2) * 10000) / 10000;
+        document.getElementById('s3-sum').textContent = `${fmt(x2)} + ${fmt(y2)} = ${fmt(sum)}`;
+        document.getElementById('s3-mag').textContent = `\u221A${fmt(sum)} = ${fmt(mag)}`;
+    }
+
+    // =========================================================
+    // Section 4: Two vectors with angle
+    // =========================================================
+    function drawS4() {
+        const canvas = document.getElementById('s4-canvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+        const CX = W / 2, CY = H / 2;
+        drawGrid(ctx, W, H, CX, CY, SCALE);
+
+        const ax = parseFloat(document.getElementById('s4-ax').value) || 0;
+        const ay = parseFloat(document.getElementById('s4-ay').value) || 0;
+        const bx = parseFloat(document.getElementById('s4-bx').value) || 0;
+        const by = parseFloat(document.getElementById('s4-by').value) || 0;
+
+        const pax = CX + ax * SCALE, pay = CY - ay * SCALE;
+        const pbx = CX + bx * SCALE, pby = CY - by * SCALE;
+
+        // Angle arc
+        const magA = Math.sqrt(ax * ax + ay * ay);
+        const magB = Math.sqrt(bx * bx + by * by);
+        if (magA > 0 && magB > 0) {
+            const angleA = Math.atan2(-ay, ax);
+            const angleB = Math.atan2(-by, bx);
+
+            // Draw the arc the short way around
+            let start = angleA;
+            let end = angleB;
+            let diff = end - start;
+            // Normalize to [-PI, PI]
+            while (diff > Math.PI) diff -= 2 * Math.PI;
+            while (diff < -Math.PI) diff += 2 * Math.PI;
+
+            ctx.strokeStyle = 'rgba(250, 204, 21, 0.5)';
+            ctx.fillStyle = 'rgba(250, 204, 21, 0.07)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(CX, CY);
+            ctx.arc(CX, CY, 35, start, start + diff, diff < 0);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(CX, CY, 35, start, start + diff, diff < 0);
+            ctx.stroke();
+
+            // Angle label
+            const midAngle = start + diff / 2;
+            const dot = ax * bx + ay * by;
+            let cosAngle = dot / (magA * magB);
+            cosAngle = Math.max(-1, Math.min(1, cosAngle));
+            const angleDeg = Math.acos(cosAngle) * 180 / Math.PI;
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(fmt(angleDeg) + '\u00B0', CX + 55 * Math.cos(midAngle), CY + 55 * Math.sin(midAngle));
+
+            document.getElementById('s4-angle').textContent = fmt(angleDeg) + '\u00B0';
+        } else {
+            document.getElementById('s4-angle').textContent = '\u2014';
+        }
+
+        // Draw vectors
+        if (magA > 0) drawArrow(ctx, CX, CY, pax, pay, '#22d3ee', 3);
+        if (magB > 0) drawArrow(ctx, CX, CY, pbx, pby, '#a78bfa', 3);
+        if (magA > 0) drawPoint(ctx, pax, pay, '#22d3ee');
+        if (magB > 0) drawPoint(ctx, pbx, pby, '#a78bfa');
+
+        // Labels
+        ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#22d3ee';
+        ctx.fillText('A', pax + 10, pay - 10);
+        ctx.fillStyle = '#a78bfa';
+        ctx.fillText('B', pbx + 10, pby + 18);
+
+        document.getElementById('s4-va').textContent = `[${fmt(ax)}, ${fmt(ay)}]`;
+        document.getElementById('s4-vb').textContent = `[${fmt(bx)}, ${fmt(by)}]`;
+    }
+
+    // =========================================================
+    // Section 5: Vector addition
+    // =========================================================
+    function drawS5() {
+        const canvas = document.getElementById('s5-canvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+        const CX = W / 2, CY = H / 2;
+        drawGrid(ctx, W, H, CX, CY, SCALE);
+
+        const ax = parseFloat(document.getElementById('s5-ax').value) || 0;
+        const ay = parseFloat(document.getElementById('s5-ay').value) || 0;
+        const bx = parseFloat(document.getElementById('s5-bx').value) || 0;
+        const by = parseFloat(document.getElementById('s5-by').value) || 0;
+        const sx = ax + bx, sy = ay + by;
+
+        const pax = CX + ax * SCALE, pay = CY - ay * SCALE;
+        const pbx = CX + bx * SCALE, pby = CY - by * SCALE;
+        const psx = CX + sx * SCALE, psy = CY - sy * SCALE;
+
+        // B translated to tip of A (ghost)
+        ctx.setLineDash([6, 4]);
+        ctx.strokeStyle = 'rgba(167, 139, 250, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(pax, pay);
+        ctx.lineTo(psx, psy);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // A translated to tip of B (ghost)
+        ctx.setLineDash([6, 4]);
+        ctx.strokeStyle = 'rgba(34, 211, 238, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(pbx, pby);
+        ctx.lineTo(psx, psy);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Draw main vectors
+        const magA = Math.sqrt(ax * ax + ay * ay);
+        const magB = Math.sqrt(bx * bx + by * by);
+        const magS = Math.sqrt(sx * sx + sy * sy);
+
+        if (magA > 0) drawArrow(ctx, CX, CY, pax, pay, '#22d3ee', 3);
+        if (magB > 0) drawArrow(ctx, CX, CY, pbx, pby, '#a78bfa', 3);
+        if (magS > 0) drawArrow(ctx, CX, CY, psx, psy, '#fbbf24', 3);
+
+        drawPoint(ctx, psx, psy, '#fbbf24');
+
+        // Labels
+        ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        if (magA > 0) { ctx.fillStyle = '#22d3ee'; ctx.fillText('A', pax + 10, pay - 8); }
+        if (magB > 0) { ctx.fillStyle = '#a78bfa'; ctx.fillText('B', pbx + 10, pby + 18); }
+        if (magS > 0) { ctx.fillStyle = '#fbbf24'; ctx.fillText('A+B', psx + 10, psy - 8); }
+
+        document.getElementById('s5-va').textContent = `[${fmt(ax)}, ${fmt(ay)}]`;
+        document.getElementById('s5-vb').textContent = `[${fmt(bx)}, ${fmt(by)}]`;
+        document.getElementById('s5-vs').textContent = `[${fmt(sx)}, ${fmt(sy)}]`;
+    }
+
+    // =========================================================
+    // Exercise answer toggle
+    // =========================================================
+    function toggleAnswer(id) {
+        const exercise = document.getElementById(id);
+        const answer = exercise.querySelector('.exercise-answer');
+        const btn = exercise.querySelector('button');
+        answer.classList.toggle('visible');
+        if (answer.classList.contains('visible')) {
+            btn.textContent = 'Hide Answer';
+            btn.classList.add('active');
+        } else {
+            btn.textContent = 'Show Answer';
+            btn.classList.remove('active');
+        }
+    }
+
+    // =========================================================
+    // Init all visualizations
+    // =========================================================
+    drawS2();
+    drawS3();
+    drawS4();
+    drawS5();
+</script>
+
+</body>
+</html>

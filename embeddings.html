@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Embeddings</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-bottom: 1px solid #334155;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #e2e8f0;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        section {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        section h2 {
+            color: #38bdf8;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        section h2 .step {
+            background: #38bdf8;
+            color: #0f172a;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 0.15rem 0.6rem;
+            border-radius: 20px;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .callout {
+            background: rgba(56, 189, 248, 0.08);
+            border-left: 3px solid #38bdf8;
+            border-radius: 0 8px 8px 0;
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .callout strong {
+            color: #38bdf8;
+        }
+
+        .callout.try {
+            border-left-color: #a78bfa;
+        }
+
+        .callout.try strong {
+            color: #a78bfa;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .loading-overlay h3 {
+            color: #f8fafc;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .loading-overlay p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            max-width: 400px;
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            margin: 1rem auto;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #38bdf8;
+            border-radius: 4px;
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        .loading-status {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Search area */
+        .search-area {
+            display: flex;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+        }
+
+        .search-area input[type="text"] {
+            flex: 1;
+            background: #0f172a;
+            border: 2px solid #475569;
+            border-radius: 8px;
+            color: #f8fafc;
+            padding: 0.75rem 1rem;
+            font-size: 1.05rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-area input[type="text"]:focus {
+            border-color: #fbbf24;
+        }
+
+        .search-area input[type="text"]::placeholder {
+            color: #64748b;
+        }
+
+        .search-area button {
+            background: #0ea5e9;
+            border: 2px solid #0ea5e9;
+            color: #fff;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .search-area button:hover {
+            background: #0284c7;
+        }
+
+        .search-area button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Visualization layout */
+        .viz-wrapper {
+            display: flex;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+            align-items: flex-start;
+        }
+
+        @media (max-width: 850px) {
+            .viz-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        .viz-container {
+            flex-shrink: 0;
+        }
+
+        canvas {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+        }
+
+        #canvas3d {
+            cursor: grab;
+        }
+
+        #canvas3d:active {
+            cursor: grabbing;
+        }
+
+        /* Results panel */
+        .results-panel {
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .results-panel h3 {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0.85rem;
+            border-radius: 8px;
+            margin-bottom: 0.4rem;
+            background: #0f172a;
+            border: 2px solid #334155;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .result-item.matched {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.06);
+        }
+
+        .result-item .doc-rank {
+            background: #334155;
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: 700;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .result-item.matched .doc-rank {
+            background: #4ade80;
+            color: #0f172a;
+        }
+
+        .result-item .doc-word {
+            flex: 1;
+            font-size: 0.95rem;
+            color: #cbd5e1;
+        }
+
+        .result-item.matched .doc-word {
+            color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .result-item .doc-score {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+            min-width: 52px;
+            text-align: right;
+        }
+
+        /* Category tags */
+        .doc-category {
+            font-size: 0.7rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 10px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        /* Legend */
+        .viz-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .viz-legend span {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .comparison-table th {
+            background: #0f172a;
+            color: #38bdf8;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 2px solid #334155;
+        }
+
+        .comparison-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #1e293b;
+            color: #cbd5e1;
+        }
+
+        .comparison-table tr:nth-child(even) td {
+            background: rgba(15, 23, 42, 0.3);
+        }
+
+        /* Embedding info */
+        .embed-info {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .embed-info .embed-label {
+            color: #64748b;
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .embed-info .embed-vector {
+            font-family: 'Courier New', monospace;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            word-break: break-all;
+            max-height: 3.2em;
+            overflow: hidden;
+        }
+
+        .embed-info .embed-vector .highlight {
+            color: #fbbf24;
+        }
+
+        .embed-dims {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .embed-dims .dim-stat {
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+
+        .embed-dims .dim-stat strong {
+            color: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="back-link">&larr; All Tutorials</a>
+    <h1>Live Embeddings</h1>
+    <p>Real ML embeddings running in your browser</p>
+</header>
+
+<main>
+
+    <!-- Section 1: What's happening -->
+    <section>
+        <h2><span class="step">1</span> Real Embeddings, Right Here</h2>
+        <p>
+            In the previous tutorials, we placed vectors by hand. In a real vector database,
+            vectors are generated by a <strong>machine learning model</strong> that converts
+            text into high-dimensional vectors called <strong>embeddings</strong>.
+        </p>
+        <p>
+            This page runs a real embedding model
+            (<a href="https://huggingface.co/Xenova/all-MiniLM-L6-v2" style="color: #38bdf8;" target="_blank">all-MiniLM-L6-v2</a>)
+            directly in your browser. The model normally produces 384-dimensional vectors,
+            but we reduce them to <strong>genuine 2-dimensional embeddings</strong> using PCA.
+            Everything you see on the chart &mdash; the positions, the distances, the similarity
+            scores &mdash; uses these actual 2D vectors. Nothing is hidden.
+        </p>
+        <div class="callout">
+            <strong>Notice the clusters:</strong> Even with only 2 dimensions, words with similar
+            meanings tend to end up near each other. The groupings won't be as clean as they would
+            be in 384 dimensions &mdash; 2D simply can't capture as much meaning &mdash; but you
+            can still see the model's understanding come through.
+        </div>
+    </section>
+
+    <!-- Section 2: Loading / Interactive -->
+    <section id="main-section">
+        <h2><span class="step">2</span> Search the Embedding Space</h2>
+
+        <!-- Loading state -->
+        <div class="loading-overlay" id="loading">
+            <h3>Loading embedding model...</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="loading-status" id="loading-status">Downloading model (~30 MB, cached after first load)...</div>
+            <p>This model runs entirely in your browser. No data is sent to any server.</p>
+        </div>
+
+        <!-- Interactive area (hidden until loaded) -->
+        <div id="interactive" style="display: none;">
+            <p>
+                Type any word or phrase below and press Search. The model will compute its
+                embedding and show where it falls in the space relative to the stored documents.
+                The three closest documents are highlighted.
+            </p>
+
+            <div class="search-area">
+                <input type="text" id="query-input" placeholder="Try: puppy, espresso, touchdown, ocean..."
+                       onkeydown="if(event.key==='Enter') doSearch()">
+                <button id="search-btn" onclick="doSearch()">Search</button>
+            </div>
+
+            <div class="viz-wrapper">
+                <div class="viz-container">
+                    <canvas id="embed-canvas" width="540" height="540"></canvas>
+                    <div class="viz-legend" id="legend"></div>
+                </div>
+                <div class="results-panel">
+                    <h3>Results (by cosine similarity)</h3>
+                    <div id="results-list"></div>
+                </div>
+            </div>
+
+            <div class="embed-info" id="embed-info" style="display: none;">
+                <div class="embed-label">Embeddings for "<span id="embed-query-word"></span>":</div>
+                <div class="embed-vector" id="embed-vector-display"></div>
+                <div class="embed-dims">
+                    <div class="dim-stat">Original model: <strong>384</strong> dimensions</div>
+                    <div class="dim-stat">2D chart uses <strong>2D</strong> vectors</div>
+                    <div class="dim-stat">3D chart uses <strong>3D</strong> vectors</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: What you're seeing -->
+    <section>
+        <h2><span class="step">3</span> What's Happening</h2>
+        <table class="comparison-table">
+            <thead>
+                <tr><th>Step</th><th>What happens</th><th>Details</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Your text is <strong>embedded</strong></td>
+                    <td>The ML model converts your input into a 384-dimensional vector</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Reduced to <strong>2D</strong></td>
+                    <td>PCA projects the 384 dimensions down to 2, giving us a real [x, y] vector</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Cosine similarity is computed</td>
+                    <td>Your 2D query vector is compared to every 2D document vector &mdash; the same formula from Tutorial 3</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Results are ranked</td>
+                    <td>Documents are sorted by similarity score, top 3 highlighted</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="callout">
+            <strong>What you see is what you get:</strong> Unlike many embedding demos, there
+            is no hidden higher-dimensional space here. The 2D vectors on the chart <em>are</em>
+            the embeddings, and the similarity scores are computed directly from those 2D vectors.
+            The tradeoff is that 2 dimensions can't capture as much meaning as 384 &mdash; some
+            words that a full-dimensional model would distinguish may overlap, and some clusters
+            may not separate as cleanly. This is a great illustration of why real vector
+            databases use hundreds of dimensions.
+        </div>
+    </section>
+
+    <!-- Section 4: 3D Embedding Space -->
+    <section>
+        <h2><span class="step">4</span> The Same Data in 3D</h2>
+        <p>
+            Below is the same set of documents reduced to <strong>3 dimensions</strong>
+            instead of 2. With an extra dimension, the model has more room to separate
+            meanings &mdash; clusters that overlap in 2D may pull apart in 3D. Drag to
+            rotate the view.
+        </p>
+
+        <div class="viz-wrapper">
+            <div class="viz-container">
+                <canvas id="canvas3d" width="540" height="540"></canvas>
+                <div class="viz-legend" id="legend3d"></div>
+            </div>
+            <div class="results-panel">
+                <h3>3D results (by cosine similarity)</h3>
+                <div id="results-list-3d"></div>
+            </div>
+        </div>
+
+        <div class="callout">
+            <strong>Compare the rankings:</strong> The 3D similarity scores will often differ
+            from the 2D scores for the same query because the 3D embeddings capture more of
+            the original 384-dimensional structure. Sometimes the top result changes entirely.
+            This illustrates why more dimensions generally means better search quality.
+        </div>
+    </section>
+
+    <!-- Section 5: Things to try -->
+    <section>
+        <h2><span class="step">5</span> Things to Try</h2>
+        <div class="callout try">
+            <strong>Related concepts:</strong> Search for "puppy" &mdash; it should end up
+            near "dog" even though it's a different word. Try "espresso" near "coffee."
+        </div>
+        <div class="callout try">
+            <strong>Phrases work too:</strong> Try "a fast car" or "something to eat for lunch."
+            The model embeds entire phrases, not just single words.
+        </div>
+        <div class="callout try">
+            <strong>Where 2D falls short:</strong> Try "kitten" &mdash; it should be closest
+            to "cat," but the scores may not be as decisive as you'd expect. In the full
+            384-dimensional space, the model can separate meanings more clearly. With only 2
+            dimensions, some distinctions get lost. This is exactly why real vector databases
+            use hundreds of dimensions.
+        </div>
+        <div class="callout try">
+            <strong>Unrelated queries:</strong> Try something completely outside the document
+            set, like "quantum physics." Look at the scores &mdash; they should all be
+            relatively low, showing that nothing in the database is a good match.
+        </div>
+    </section>
+
+</main>
+
+<script type="module">
+    // =========================================================
+    // Import Transformers.js
+    // =========================================================
+    import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+
+    // =========================================================
+    // Document set - simple words across categories
+    // =========================================================
+    const DOCUMENTS = [
+        { word: 'dog',        category: 'animals',  color: '#f472b6' },
+        { word: 'cat',        category: 'animals',  color: '#f472b6' },
+        { word: 'fish',       category: 'animals',  color: '#f472b6' },
+        { word: 'bird',       category: 'animals',  color: '#f472b6' },
+        { word: 'horse',      category: 'animals',  color: '#f472b6' },
+        { word: 'pizza',      category: 'food',     color: '#fb923c' },
+        { word: 'bread',      category: 'food',     color: '#fb923c' },
+        { word: 'coffee',     category: 'food',     color: '#fb923c' },
+        { word: 'apple',      category: 'food',     color: '#fb923c' },
+        { word: 'rice',       category: 'food',     color: '#fb923c' },
+        { word: 'soccer',     category: 'sports',   color: '#38bdf8' },
+        { word: 'tennis',     category: 'sports',   color: '#38bdf8' },
+        { word: 'basketball', category: 'sports',   color: '#38bdf8' },
+        { word: 'swimming',   category: 'sports',   color: '#38bdf8' },
+        { word: 'car',        category: 'vehicles', color: '#a78bfa' },
+        { word: 'airplane',   category: 'vehicles', color: '#a78bfa' },
+        { word: 'bicycle',    category: 'vehicles', color: '#a78bfa' },
+        { word: 'boat',       category: 'vehicles', color: '#a78bfa' },
+        { word: 'guitar',     category: 'music',    color: '#2dd4bf' },
+        { word: 'piano',      category: 'music',    color: '#2dd4bf' },
+        { word: 'drums',      category: 'music',    color: '#2dd4bf' },
+    ];
+
+    const CATEGORY_COLORS = {
+        animals:  '#f472b6',
+        food:     '#fb923c',
+        sports:   '#38bdf8',
+        vehicles: '#a78bfa',
+        music:    '#2dd4bf',
+    };
+
+    const MATCH_COLOR = '#4ade80';
+    const QUERY_COLOR = '#fbbf24';
+    const TOP_K = 3;
+
+    // =========================================================
+    // State
+    // =========================================================
+    let embedder = null;
+    let docEmbeddings2D = [];    // 2D embeddings
+    let docEmbeddings3D = [];    // 3D embeddings
+    let pcaMean = null;
+    let pcaComponents = null;    // 3 principal components
+    let queryEmbedding2D = null;
+    let queryEmbedding3D = null;
+    let queryWord = null;
+    let scored = [];
+    let scored3D = [];
+
+    // =========================================================
+    // Canvas setup
+    // =========================================================
+    const canvas = document.getElementById('embed-canvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const PAD = 60;
+
+    // =========================================================
+    // Load model and compute document embeddings
+    // =========================================================
+    async function init() {
+        const progressFill = document.getElementById('progress-fill');
+        const statusEl = document.getElementById('loading-status');
+
+        try {
+            statusEl.textContent = 'Loading embedding model...';
+            progressFill.style.width = '10%';
+
+            embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
+                progress_callback: (p) => {
+                    if (p.status === 'downloading' || p.status === 'progress') {
+                        const pct = p.progress ? Math.round(p.progress) : 0;
+                        progressFill.style.width = Math.max(10, Math.min(80, pct)) + '%';
+                        if (p.file) {
+                            statusEl.textContent = `Downloading ${p.file}... ${pct}%`;
+                        }
+                    } else if (p.status === 'ready') {
+                        progressFill.style.width = '85%';
+                        statusEl.textContent = 'Model loaded!';
+                    }
+                }
+            });
+
+            statusEl.textContent = 'Computing document embeddings...';
+            progressFill.style.width = '85%';
+
+            // Embed all documents (384-dim)
+            const words = DOCUMENTS.map(d => d.word);
+            const output = await embedder(words, { pooling: 'mean', normalize: true });
+            const rawEmbeddings = [];
+            for (let i = 0; i < words.length; i++) {
+                rawEmbeddings.push(Array.from(output[i].data));
+            }
+
+            statusEl.textContent = 'Reducing to 2D embeddings via PCA...';
+            progressFill.style.width = '95%';
+
+            // Compute PCA on 384-dim vectors, then reduce to 2D and 3D
+            computePCA(rawEmbeddings);
+            docEmbeddings2D = rawEmbeddings.map(e => projectToPCA(e));
+            docEmbeddings3D = rawEmbeddings.map(e => projectToPCA3D(e));
+
+            progressFill.style.width = '100%';
+            statusEl.textContent = 'Ready!';
+
+            // Show interactive area
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('interactive').style.display = 'block';
+                buildLegend();
+                drawChart();
+                updateResults();
+                init3D();
+                animate3D();
+            }, 300);
+
+        } catch (err) {
+            statusEl.textContent = 'Error loading model: ' + err.message;
+            progressFill.style.background = '#ef4444';
+            console.error(err);
+        }
+    }
+
+    // =========================================================
+    // PCA (3-component, we use first 2 for 2D, all 3 for 3D)
+    // =========================================================
+    function computePCA(vectors) {
+        const n = vectors.length;
+        const dim = vectors[0].length;
+
+        // Compute mean
+        pcaMean = new Float64Array(dim);
+        for (const v of vectors) {
+            for (let j = 0; j < dim; j++) pcaMean[j] += v[j];
+        }
+        for (let j = 0; j < dim; j++) pcaMean[j] /= n;
+
+        // Center the data
+        const centered = vectors.map(v => v.map((x, j) => x - pcaMean[j]));
+
+        // Power iteration to find top 3 components
+        pcaComponents = [];
+        const deflected = centered.map(v => [...v]);
+
+        for (let comp = 0; comp < 3; comp++) {
+            let pc = new Float64Array(dim);
+            // Random init
+            for (let j = 0; j < dim; j++) pc[j] = Math.random() - 0.5;
+            normalize(pc);
+
+            // Power iteration
+            for (let iter = 0; iter < 100; iter++) {
+                const newPc = new Float64Array(dim);
+                for (const row of deflected) {
+                    let dot = 0;
+                    for (let j = 0; j < dim; j++) dot += row[j] * pc[j];
+                    for (let j = 0; j < dim; j++) newPc[j] += dot * row[j];
+                }
+                normalize(newPc);
+
+                // Check convergence
+                let diff = 0;
+                for (let j = 0; j < dim; j++) diff += (newPc[j] - pc[j]) ** 2;
+                pc = newPc;
+                if (diff < 1e-10) break;
+            }
+
+            pcaComponents.push(pc);
+
+            // Deflate: remove this component from the data
+            for (let i = 0; i < deflected.length; i++) {
+                let dot = 0;
+                for (let j = 0; j < dim; j++) dot += deflected[i][j] * pc[j];
+                for (let j = 0; j < dim; j++) deflected[i][j] -= dot * pc[j];
+            }
+        }
+    }
+
+    function normalize(v) {
+        let norm = 0;
+        for (let j = 0; j < v.length; j++) norm += v[j] * v[j];
+        norm = Math.sqrt(norm);
+        if (norm > 0) for (let j = 0; j < v.length; j++) v[j] /= norm;
+    }
+
+    function projectToPCA(embedding) {
+        const x = pcaComponents[0].reduce((s, v, j) => s + (embedding[j] - pcaMean[j]) * v, 0);
+        const y = pcaComponents[1].reduce((s, v, j) => s + (embedding[j] - pcaMean[j]) * v, 0);
+        return [x, y];
+    }
+
+    function projectToPCA3D(embedding) {
+        const x = pcaComponents[0].reduce((s, v, j) => s + (embedding[j] - pcaMean[j]) * v, 0);
+        const y = pcaComponents[1].reduce((s, v, j) => s + (embedding[j] - pcaMean[j]) * v, 0);
+        const z = pcaComponents[2].reduce((s, v, j) => s + (embedding[j] - pcaMean[j]) * v, 0);
+        return [x, y, z];
+    }
+
+    // =========================================================
+    // Cosine similarity
+    // =========================================================
+    function cosineSim(a, b) {
+        let dot = 0, magA = 0, magB = 0;
+        for (let i = 0; i < a.length; i++) {
+            dot += a[i] * b[i];
+            magA += a[i] * a[i];
+            magB += b[i] * b[i];
+        }
+        magA = Math.sqrt(magA);
+        magB = Math.sqrt(magB);
+        if (magA === 0 || magB === 0) return 0;
+        return dot / (magA * magB);
+    }
+
+    // =========================================================
+    // Search
+    // =========================================================
+    async function doSearch() {
+        const input = document.getElementById('query-input');
+        const btn = document.getElementById('search-btn');
+        const text = input.value.trim();
+        if (!text || !embedder) return;
+
+        btn.disabled = true;
+        btn.textContent = 'Embedding...';
+
+        try {
+            const output = await embedder([text], { pooling: 'mean', normalize: true });
+            const rawQuery = Array.from(output[0].data);
+            queryEmbedding2D = projectToPCA(rawQuery);
+            queryEmbedding3D = projectToPCA3D(rawQuery);
+            queryWord = text;
+
+            // Show the actual embeddings
+            const infoEl = document.getElementById('embed-info');
+            infoEl.style.display = 'block';
+            document.getElementById('embed-query-word').textContent = text;
+            document.getElementById('embed-vector-display').innerHTML =
+                '2D: [<span class="highlight">' + queryEmbedding2D[0].toFixed(4) +
+                '</span>, <span class="highlight">' + queryEmbedding2D[1].toFixed(4) + '</span>]' +
+                '&nbsp;&nbsp;&nbsp;3D: [<span class="highlight">' + queryEmbedding3D[0].toFixed(4) +
+                '</span>, <span class="highlight">' + queryEmbedding3D[1].toFixed(4) +
+                '</span>, <span class="highlight">' + queryEmbedding3D[2].toFixed(4) + '</span>]';
+
+            updateResults();
+            update3DResults();
+            drawChart();
+        } catch (err) {
+            console.error(err);
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Search';
+    }
+
+    // =========================================================
+    // Compute results
+    // =========================================================
+    function updateResults() {
+        scored = DOCUMENTS.map((d, i) => ({
+            doc: d,
+            index: i,
+            sim: queryEmbedding2D ? cosineSim(queryEmbedding2D, docEmbeddings2D[i]) : 0
+        }));
+        scored.sort((a, b) => b.sim - a.sim);
+
+        const container = document.getElementById('results-list');
+        container.innerHTML = '';
+        scored.forEach((s, rank) => {
+            const matched = queryEmbedding2D && rank < TOP_K;
+            const div = document.createElement('div');
+            div.className = 'result-item' + (matched ? ' matched' : '');
+
+            const scoreColor = !queryEmbedding2D ? '#64748b' :
+                s.sim > 0.5 ? '#4ade80' : s.sim > 0.3 ? '#eab308' : s.sim > 0 ? '#f97316' : '#ef4444';
+
+            const catStyle = `background: ${s.doc.color}22; color: ${s.doc.color};`;
+
+            div.innerHTML = `
+                <div class="doc-rank">${rank + 1}</div>
+                <div class="doc-word">${s.doc.word}</div>
+                <span class="doc-category" style="${catStyle}">${s.doc.category}</span>
+                <div class="doc-score" style="color: ${scoreColor}">
+                    ${queryEmbedding2D ? s.sim.toFixed(4) : '—'}
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // =========================================================
+    // Drawing
+    // =========================================================
+    function buildLegend() {
+        const legendEl = document.getElementById('legend');
+        const cats = Object.entries(CATEGORY_COLORS);
+        let html = '';
+        for (const [cat, color] of cats) {
+            html += `<span><span class="legend-dot" style="background: ${color};"></span> ${cat}</span>`;
+        }
+        html += `<span><span class="legend-dot" style="background: ${QUERY_COLOR};"></span> query</span>`;
+        legendEl.innerHTML = html;
+    }
+
+    function drawChart() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Compute bounds for scaling
+        let allPts = [...docEmbeddings2D];
+        if (queryEmbedding2D) allPts.push(queryEmbedding2D);
+
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        for (const [x, y] of allPts) {
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+        }
+
+        // Add some padding to the data range
+        const rangeX = (maxX - minX) || 1;
+        const rangeY = (maxY - minY) || 1;
+        const range = Math.max(rangeX, rangeY) * 1.15;
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+
+        function toCanvas(px, py) {
+            const x = PAD + ((px - centerX) / range + 0.5) * (W - 2 * PAD);
+            const y = (H - PAD) - ((py - centerY) / range + 0.5) * (H - 2 * PAD);
+            return [x, y];
+        }
+
+        // Determine matched set
+        const matchedSet = new Set();
+        if (queryEmbedding2D) {
+            for (let i = 0; i < TOP_K && i < scored.length; i++) {
+                matchedSet.add(scored[i].index);
+            }
+        }
+
+        // Draw connection lines from query to matched docs
+        if (queryEmbedding2D) {
+            const [qx, qy] = toCanvas(queryEmbedding2D[0], queryEmbedding2D[1]);
+            for (const idx of matchedSet) {
+                const [dx, dy] = toCanvas(docEmbeddings2D[idx][0], docEmbeddings2D[idx][1]);
+                ctx.beginPath();
+                ctx.moveTo(qx, qy);
+                ctx.lineTo(dx, dy);
+                ctx.strokeStyle = 'rgba(74, 222, 128, 0.2)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 4]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        // Draw document points
+        DOCUMENTS.forEach((d, i) => {
+            const [cx, cy] = toCanvas(docEmbeddings2D[i][0], docEmbeddings2D[i][1]);
+            const matched = matchedSet.has(i);
+            const radius = matched ? 8 : 6;
+
+            // Glow for matched
+            if (matched) {
+                ctx.beginPath();
+                ctx.arc(cx, cy, 16, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(74, 222, 128, 0.12)';
+                ctx.fill();
+            }
+
+            // Dot
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fillStyle = matched ? MATCH_COLOR : d.color;
+            ctx.fill();
+
+            if (matched) {
+                ctx.strokeStyle = MATCH_COLOR;
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+            }
+
+            // Label
+            ctx.font = matched
+                ? 'bold 13px Segoe UI, system-ui, sans-serif'
+                : '12px Segoe UI, system-ui, sans-serif';
+            ctx.fillStyle = matched ? '#f8fafc' : '#94a3b8';
+            ctx.textAlign = 'center';
+            ctx.fillText(d.word, cx, cy - radius - 6);
+        });
+
+        // Draw query point
+        if (queryEmbedding2D) {
+            const [qx, qy] = toCanvas(queryEmbedding2D[0], queryEmbedding2D[1]);
+
+            // Glow
+            ctx.beginPath();
+            ctx.arc(qx, qy, 20, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(251, 191, 36, 0.12)';
+            ctx.fill();
+
+            // Diamond shape for query
+            ctx.beginPath();
+            ctx.moveTo(qx, qy - 10);
+            ctx.lineTo(qx + 10, qy);
+            ctx.lineTo(qx, qy + 10);
+            ctx.lineTo(qx - 10, qy);
+            ctx.closePath();
+            ctx.fillStyle = QUERY_COLOR;
+            ctx.fill();
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Label
+            ctx.font = 'bold 13px Segoe UI, system-ui, sans-serif';
+            ctx.fillStyle = QUERY_COLOR;
+            ctx.textAlign = 'center';
+            ctx.fillText(`"${queryWord}"`, qx, qy - 16);
+        }
+    }
+
+    // =========================================================
+    // 3D Visualization
+    // =========================================================
+    const canvas3d = document.getElementById('canvas3d');
+    const ctx3d = canvas3d.getContext('2d');
+    const W3 = canvas3d.width, H3 = canvas3d.height;
+    const CX3 = W3 / 2, CY3 = H3 / 2;
+
+    let rotX = -0.4;   // pitch
+    let rotY = 0.6;    // yaw
+    let autoRotate = true;
+    let dragging3d = false;
+    let lastMouse = { x: 0, y: 0 };
+
+    function init3D() {
+        // Build 3D legend
+        const legendEl = document.getElementById('legend3d');
+        const cats = Object.entries(CATEGORY_COLORS);
+        let html = '';
+        for (const [cat, color] of cats) {
+            html += `<span><span class="legend-dot" style="background: ${color};"></span> ${cat}</span>`;
+        }
+        html += `<span><span class="legend-dot" style="background: ${QUERY_COLOR};"></span> query</span>`;
+        legendEl.innerHTML = html;
+
+        update3DResults();
+    }
+
+    function update3DResults() {
+        scored3D = DOCUMENTS.map((d, i) => ({
+            doc: d,
+            index: i,
+            sim: queryEmbedding3D ? cosineSim(queryEmbedding3D, docEmbeddings3D[i]) : 0
+        }));
+        scored3D.sort((a, b) => b.sim - a.sim);
+
+        const container = document.getElementById('results-list-3d');
+        container.innerHTML = '';
+        scored3D.forEach((s, rank) => {
+            const matched = queryEmbedding3D && rank < TOP_K;
+            const div = document.createElement('div');
+            div.className = 'result-item' + (matched ? ' matched' : '');
+            const scoreColor = !queryEmbedding3D ? '#64748b' :
+                s.sim > 0.5 ? '#4ade80' : s.sim > 0.3 ? '#eab308' : s.sim > 0 ? '#f97316' : '#ef4444';
+            const catStyle = `background: ${s.doc.color}22; color: ${s.doc.color};`;
+            div.innerHTML = `
+                <div class="doc-rank">${rank + 1}</div>
+                <div class="doc-word">${s.doc.word}</div>
+                <span class="doc-category" style="${catStyle}">${s.doc.category}</span>
+                <div class="doc-score" style="color: ${scoreColor}">
+                    ${queryEmbedding3D ? s.sim.toFixed(4) : '—'}
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // Rotate point [x, y, z] by rotY (yaw) then rotX (pitch)
+    function rotate3D(x, y, z) {
+        // Yaw (around Y axis)
+        const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+        let rx = x * cosY + z * sinY;
+        let rz = -x * sinY + z * cosY;
+        let ry = y;
+        // Pitch (around X axis)
+        const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+        let ry2 = ry * cosX - rz * sinX;
+        let rz2 = ry * sinX + rz * cosX;
+        return [rx, ry2, rz2];
+    }
+
+    function project3D(x, y, z, scale) {
+        const [rx, ry, rz] = rotate3D(x, y, z);
+        // Simple perspective
+        const perspective = 600;
+        const d = perspective / (perspective + rz * scale + 200);
+        return {
+            sx: CX3 + rx * scale * d,
+            sy: CY3 - ry * scale * d,
+            depth: rz,
+            scale: d
+        };
+    }
+
+    function draw3DChart() {
+        ctx3d.clearRect(0, 0, W3, H3);
+
+        if (docEmbeddings3D.length === 0) return;
+
+        // Compute data bounds for scaling
+        let maxAbs = 0;
+        for (const [x, y, z] of docEmbeddings3D) {
+            maxAbs = Math.max(maxAbs, Math.abs(x), Math.abs(y), Math.abs(z));
+        }
+        if (queryEmbedding3D) {
+            for (const v of queryEmbedding3D) maxAbs = Math.max(maxAbs, Math.abs(v));
+        }
+        const scale = maxAbs > 0 ? 180 / maxAbs : 100;
+
+        // Draw subtle axes
+        const axisLen = maxAbs * 1.1;
+        const axes = [
+            { v: [axisLen, 0, 0], label: 'PC1', color: '#334155' },
+            { v: [0, axisLen, 0], label: 'PC2', color: '#334155' },
+            { v: [0, 0, axisLen], label: 'PC3', color: '#334155' },
+        ];
+        for (const ax of axes) {
+            const from = project3D(0, 0, 0, scale);
+            const to = project3D(ax.v[0], ax.v[1], ax.v[2], scale);
+            const toNeg = project3D(-ax.v[0], -ax.v[1], -ax.v[2], scale);
+            ctx3d.beginPath();
+            ctx3d.moveTo(toNeg.sx, toNeg.sy);
+            ctx3d.lineTo(to.sx, to.sy);
+            ctx3d.strokeStyle = ax.color;
+            ctx3d.lineWidth = 1;
+            ctx3d.setLineDash([4, 4]);
+            ctx3d.stroke();
+            ctx3d.setLineDash([]);
+            ctx3d.fillStyle = '#475569';
+            ctx3d.font = '11px Segoe UI, system-ui, sans-serif';
+            ctx3d.textAlign = 'center';
+            ctx3d.fillText(ax.label, to.sx, to.sy - 6);
+        }
+
+        // Determine matched set for 3D
+        const matchedSet3D = new Set();
+        if (queryEmbedding3D) {
+            for (let i = 0; i < TOP_K && i < scored3D.length; i++) {
+                matchedSet3D.add(scored3D[i].index);
+            }
+        }
+
+        // Build list of all points to draw, sorted by depth for painter's algorithm
+        const items = [];
+        DOCUMENTS.forEach((d, i) => {
+            const [x, y, z] = docEmbeddings3D[i];
+            const p = project3D(x, y, z, scale);
+            items.push({ type: 'doc', index: i, doc: d, p, matched: matchedSet3D.has(i) });
+        });
+        if (queryEmbedding3D) {
+            const p = project3D(queryEmbedding3D[0], queryEmbedding3D[1], queryEmbedding3D[2], scale);
+            items.push({ type: 'query', p });
+        }
+        // Sort by depth: far items first
+        items.sort((a, b) => a.p.depth - b.p.depth);
+
+        // Draw connection lines from query to matched (behind everything)
+        if (queryEmbedding3D) {
+            const qp = project3D(queryEmbedding3D[0], queryEmbedding3D[1], queryEmbedding3D[2], scale);
+            for (const idx of matchedSet3D) {
+                const [dx, dy, dz] = docEmbeddings3D[idx];
+                const dp = project3D(dx, dy, dz, scale);
+                ctx3d.beginPath();
+                ctx3d.moveTo(qp.sx, qp.sy);
+                ctx3d.lineTo(dp.sx, dp.sy);
+                ctx3d.strokeStyle = 'rgba(74, 222, 128, 0.2)';
+                ctx3d.lineWidth = 1.5;
+                ctx3d.setLineDash([5, 4]);
+                ctx3d.stroke();
+                ctx3d.setLineDash([]);
+            }
+        }
+
+        // Draw items
+        for (const item of items) {
+            const { p } = item;
+            const depthFade = 0.4 + 0.6 * p.scale; // fade far items
+
+            if (item.type === 'doc') {
+                const d = item.doc;
+                const matched = item.matched;
+                const radius = (matched ? 8 : 5) * p.scale;
+
+                if (matched) {
+                    ctx3d.beginPath();
+                    ctx3d.arc(p.sx, p.sy, 15 * p.scale, 0, Math.PI * 2);
+                    ctx3d.fillStyle = `rgba(74, 222, 128, ${0.12 * depthFade})`;
+                    ctx3d.fill();
+                }
+
+                ctx3d.beginPath();
+                ctx3d.arc(p.sx, p.sy, radius, 0, Math.PI * 2);
+                ctx3d.fillStyle = matched ? MATCH_COLOR : d.color;
+                ctx3d.globalAlpha = depthFade;
+                ctx3d.fill();
+                ctx3d.globalAlpha = 1;
+
+                if (matched) {
+                    ctx3d.strokeStyle = MATCH_COLOR;
+                    ctx3d.lineWidth = 2;
+                    ctx3d.stroke();
+                }
+
+                ctx3d.font = (matched ? 'bold ' : '') + `${Math.round(12 * p.scale)}px Segoe UI, system-ui, sans-serif`;
+                ctx3d.fillStyle = matched ? '#f8fafc' : '#94a3b8';
+                ctx3d.globalAlpha = depthFade;
+                ctx3d.textAlign = 'center';
+                ctx3d.fillText(d.word, p.sx, p.sy - radius - 5);
+                ctx3d.globalAlpha = 1;
+
+            } else if (item.type === 'query') {
+                const size = 9 * p.scale;
+                ctx3d.beginPath();
+                ctx3d.arc(p.sx, p.sy, 18 * p.scale, 0, Math.PI * 2);
+                ctx3d.fillStyle = 'rgba(251, 191, 36, 0.1)';
+                ctx3d.fill();
+
+                ctx3d.beginPath();
+                ctx3d.moveTo(p.sx, p.sy - size);
+                ctx3d.lineTo(p.sx + size, p.sy);
+                ctx3d.lineTo(p.sx, p.sy + size);
+                ctx3d.lineTo(p.sx - size, p.sy);
+                ctx3d.closePath();
+                ctx3d.fillStyle = QUERY_COLOR;
+                ctx3d.fill();
+                ctx3d.strokeStyle = '#0f172a';
+                ctx3d.lineWidth = 2;
+                ctx3d.stroke();
+
+                ctx3d.font = `bold ${Math.round(13 * p.scale)}px Segoe UI, system-ui, sans-serif`;
+                ctx3d.fillStyle = QUERY_COLOR;
+                ctx3d.textAlign = 'center';
+                ctx3d.fillText(`"${queryWord}"`, p.sx, p.sy - size - 8);
+            }
+        }
+
+        // Drag hint
+        if (!dragging3d && autoRotate) {
+            ctx3d.fillStyle = '#475569';
+            ctx3d.font = '12px Segoe UI, system-ui, sans-serif';
+            ctx3d.textAlign = 'center';
+            ctx3d.fillText('Drag to rotate', CX3, H3 - 16);
+        }
+    }
+
+    // Animation loop
+    function animate3D() {
+        if (autoRotate) {
+            rotY += 0.004;
+        }
+        draw3DChart();
+        requestAnimationFrame(animate3D);
+    }
+
+    // Mouse/touch rotation for 3D canvas
+    canvas3d.addEventListener('mousedown', e => {
+        dragging3d = true;
+        autoRotate = false;
+        lastMouse = { x: e.clientX, y: e.clientY };
+    });
+
+    canvas3d.addEventListener('touchstart', e => {
+        e.preventDefault();
+        dragging3d = true;
+        autoRotate = false;
+        lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }, { passive: false });
+
+    function onMove3D(e) {
+        if (!dragging3d) return;
+        e.preventDefault();
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        const dx = cx - lastMouse.x;
+        const dy = cy - lastMouse.y;
+        rotY += dx * 0.008;
+        rotX += dy * 0.008;
+        // Clamp pitch
+        rotX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, rotX));
+        lastMouse = { x: cx, y: cy };
+    }
+
+    canvas3d.addEventListener('mousemove', onMove3D);
+    canvas3d.addEventListener('touchmove', onMove3D, { passive: false });
+
+    function onUp3D() { dragging3d = false; }
+    canvas3d.addEventListener('mouseup', onUp3D);
+    canvas3d.addEventListener('mouseleave', onUp3D);
+    canvas3d.addEventListener('touchend', onUp3D);
+
+    // =========================================================
+    // Make search function accessible from inline handler
+    // =========================================================
+    window.doSearch = doSearch;
+
+    // =========================================================
+    // Init on load
+    // =========================================================
+    init();
+</script>
+
+</body>
+</html>
