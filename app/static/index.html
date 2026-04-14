@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Text to Vector</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Text to Vector</h1>
+  <p>Type any text and press <strong>Embed</strong>. The server will run it through the embedding model and return its 384-number vector.</p>
+
+  <div class="controls">
+    <input type="text" id="text-input" value="a cat sat on a mat">
+    <button id="embed-button">Embed</button>
+  </div>
+
+  <div class="result">
+    <div class="label">Your text:</div>
+    <div id="text-out"></div>
+
+    <div class="label">Vector length:</div>
+    <div id="length-out"></div>
+
+    <div class="label">Vector:</div>
+    <pre id="vector-out"></pre>
+  </div>
+
+  <hr>
+
+  <h1>Compare Two Texts</h1>
+  <p>Type two strings. The app calls <code>/embed</code> once for each string to get their vectors, then calls <code>/similarity</code> to get the cosine similarity score (between -1 and 1; higher means more similar).</p>
+
+  <div class="controls">
+    <input type="text" id="text1-input" value="cat">
+    <input type="text" id="text2-input" value="kitten">
+    <button id="compare-button">Compare</button>
+  </div>
+
+  <div class="result">
+    <div class="label">Text 1 vector:</div>
+    <pre id="vector1-out" class="vector-display"></pre>
+
+    <div class="label">Text 2 vector:</div>
+    <pre id="vector2-out" class="vector-display"></pre>
+
+    <div class="label">Cosine similarity:</div>
+    <div id="similarity-out" class="score"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
