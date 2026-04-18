@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document Search</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Document Search</h1>
+  <p>This database has 15 short documents about animals, food, space, music, and technology. Type a question or phrase and ChromaDB will find the most similar documents.</p>
+
+  <div class="controls">
+    <input type="text" id="search-input" placeholder="e.g. pets at home" value="a pet relaxing at home">
+    <button id="search-button">Search</button>
+  </div>
+
+  <div class="label">Results <span id="result-count"></span></div>
+  <div id="results"></div>
+
+  <hr>
+
+  <h2>All Documents in the Collection</h2>
+  <p>These are the 15 documents stored in ChromaDB. Each one was automatically embedded when the server started.</p>
+  <div id="doc-list"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

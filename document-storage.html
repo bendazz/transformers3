@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Storage</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-bottom: 1px solid #334155;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #e2e8f0;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        section {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        section h2 {
+            color: #38bdf8;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        section h2 .step {
+            background: #38bdf8;
+            color: #0f172a;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 0.15rem 0.6rem;
+            border-radius: 20px;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .callout {
+            background: rgba(56, 189, 248, 0.08);
+            border-left: 3px solid #38bdf8;
+            border-radius: 0 8px 8px 0;
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .callout strong {
+            color: #38bdf8;
+        }
+
+        .callout.try {
+            border-left-color: #a78bfa;
+        }
+
+        .callout.try strong {
+            color: #a78bfa;
+        }
+
+        code {
+            background: #0f172a;
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #38bdf8;
+        }
+
+        /* Loading state */
+        .loading-container {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .progress-bar {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            height: 12px;
+            max-width: 400px;
+            margin: 1rem auto;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #38bdf8, #a78bfa);
+            height: 100%;
+            width: 0%;
+            border-radius: 20px;
+            transition: width 0.3s;
+        }
+
+        .loading-status {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Controls */
+        .input-row {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .input-row input[type="text"] {
+            flex: 1;
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: #f8fafc;
+            padding: 0.6rem 0.9rem;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-row input[type="text"]:focus {
+            border-color: #38bdf8;
+        }
+
+        button {
+            background: #334155;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            background: #475569;
+            border-color: #64748b;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button.primary {
+            background: #0ea5e9;
+            border-color: #0ea5e9;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        button.primary:hover {
+            background: #0284c7;
+        }
+
+        button.danger {
+            background: #334155;
+            border-color: #475569;
+        }
+
+        button.danger:hover {
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+        /* Document list */
+        .doc-list {
+            margin: 1rem 0;
+        }
+
+        .doc-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .doc-count {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .doc-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.65rem 0.85rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            background: #0f172a;
+            border: 1px solid #334155;
+        }
+
+        .doc-id {
+            color: #38bdf8;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 50px;
+        }
+
+        .doc-text {
+            color: #cbd5e1;
+            font-size: 0.95rem;
+            flex: 1;
+        }
+
+        .doc-status {
+            color: #64748b;
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+
+        .empty-message {
+            color: #64748b;
+            font-style: italic;
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .status-toast {
+            color: #4ade80;
+            font-size: 0.9rem;
+            min-height: 1.4rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Search results */
+        .search-result {
+            padding: 0.85rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            background: #0f172a;
+            border: 2px solid #334155;
+            transition: border-color 0.3s;
+        }
+
+        .search-result.top-match {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.04);
+        }
+
+        .search-result-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .result-rank {
+            background: #334155;
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: 700;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .search-result.top-match .result-rank {
+            background: #4ade80;
+            color: #0f172a;
+        }
+
+        .result-id {
+            color: #38bdf8;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        .result-distance {
+            margin-left: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .result-text {
+            color: #cbd5e1;
+            padding-left: 2.5rem;
+            font-size: 0.95rem;
+        }
+
+        /* Comparison table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .comparison-table th {
+            background: #0f172a;
+            color: #38bdf8;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 2px solid #334155;
+        }
+
+        .comparison-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #1e293b;
+            color: #cbd5e1;
+        }
+
+        .comparison-table tr:nth-child(even) td {
+            background: rgba(15, 23, 42, 0.3);
+        }
+
+        /* Suggestions */
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin: 0.75rem 0;
+        }
+
+        .suggestion {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .suggestion:hover {
+            border-color: #38bdf8;
+            color: #38bdf8;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="back-link">&larr; All Tutorials</a>
+    <h1>Document Storage</h1>
+    <p>Store documents in a vector database and search them with natural language</p>
+</header>
+
+<main>
+
+    <!-- Section 1: The idea -->
+    <section>
+        <h2><span class="step">1</span> From Comparing to Storing</h2>
+        <p>
+            So far, you've seen how text gets converted into vectors (embeddings) and how
+            cosine similarity measures how related two pieces of text are. But comparing
+            two texts at a time isn't very useful in the real world.
+        </p>
+        <p>
+            A <strong>vector database</strong> lets you <strong>store</strong> many documents,
+            each with its embedding. Then when you have a question, the database embeds your
+            question and finds the stored documents whose vectors are closest &mdash; all in
+            one step.
+        </p>
+        <p>
+            On this page, we'll build up a collection of documents and search it. The same
+            embedding model from the previous tutorial runs in your browser &mdash; no server
+            needed.
+        </p>
+    </section>
+
+    <!-- Loading -->
+    <section id="loading">
+        <div class="loading-container">
+            <h3 style="color: #f8fafc; margin-bottom: 0.5rem;">Loading embedding model...</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="loading-status" id="loading-status">Downloading model (~30 MB, cached after first load)...</div>
+            <p style="color: #64748b; font-size: 0.9rem; margin-top: 0.5rem;">This model runs entirely in your browser. No data is sent to any server.</p>
+        </div>
+    </section>
+
+    <!-- Interactive sections (hidden until model loads) -->
+    <div id="interactive" style="display: none;">
+
+        <!-- Section 2: Add documents -->
+        <section>
+            <h2><span class="step">2</span> Add Documents</h2>
+            <p>
+                Type a sentence and click <strong>Add</strong>. The embedding model will
+                convert your text into a 384-dimensional vector and store both the text
+                and its vector in the collection.
+            </p>
+            <p>
+                Try adding a few sentences about different topics so you have something
+                interesting to search.
+            </p>
+
+            <div class="suggestions" id="suggestions">
+                <span class="suggestion" onclick="addSuggestion(this)">The cat curled up on the warm windowsill</span>
+                <span class="suggestion" onclick="addSuggestion(this)">A dog chased a ball across the park</span>
+                <span class="suggestion" onclick="addSuggestion(this)">The stock market crashed on Monday</span>
+                <span class="suggestion" onclick="addSuggestion(this)">She baked a chocolate cake for the party</span>
+                <span class="suggestion" onclick="addSuggestion(this)">The astronauts repaired the space station</span>
+                <span class="suggestion" onclick="addSuggestion(this)">Rain pounded the roof all night long</span>
+                <span class="suggestion" onclick="addSuggestion(this)">The guitarist played a blues solo</span>
+                <span class="suggestion" onclick="addSuggestion(this)">Python is a popular programming language</span>
+            </div>
+
+            <div class="input-row">
+                <input type="text" id="doc-input" placeholder="Type a sentence to store...">
+                <button class="primary" id="add-btn" onclick="addDocument()">Add</button>
+            </div>
+            <div class="status-toast" id="add-status"></div>
+        </section>
+
+        <!-- Section 3: View collection -->
+        <section>
+            <h2><span class="step">3</span> Your Collection</h2>
+            <p>
+                These are the documents currently stored in the collection. Each one has
+                an ID, the original text, and a 384-dimensional vector (stored behind the
+                scenes).
+            </p>
+
+            <div class="doc-list">
+                <div class="doc-list-header">
+                    <span class="doc-count" id="doc-count">0 documents stored</span>
+                    <button class="danger" id="clear-btn" onclick="clearCollection()">Clear All</button>
+                </div>
+                <div id="doc-list"></div>
+            </div>
+        </section>
+
+        <!-- Section 4: Search -->
+        <section>
+            <h2><span class="step">4</span> Search</h2>
+            <p>
+                Now type a question or phrase. The model embeds your query using the
+                same model, then compares it against every stored document's vector.
+                Results are ranked by <strong>distance</strong> &mdash; lower distance
+                means the vectors are closer together (more similar).
+            </p>
+
+            <div class="input-row">
+                <input type="text" id="search-input" placeholder="e.g. a pet relaxing at home">
+                <button class="primary" id="search-btn" onclick="doSearch()">Search</button>
+            </div>
+
+            <div id="search-results"></div>
+
+            <div class="callout try" id="try-callout" style="display: none;">
+                <strong>Try it:</strong> Search for something related to your documents
+                but worded differently. For example, if you stored "The cat curled up on the
+                warm windowsill", try searching "a pet relaxing at home." The model understands
+                that these mean similar things even though they share no words in common.
+            </div>
+        </section>
+
+        <!-- Section 5: What just happened -->
+        <section>
+            <h2><span class="step">5</span> What Just Happened</h2>
+            <p>
+                You just did exactly what a vector database like ChromaDB does. Here's the
+                breakdown:
+            </p>
+            <table class="comparison-table">
+                <thead>
+                    <tr><th>When you...</th><th>The database...</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Added a document</td>
+                        <td>Ran it through the embedding model to get a 384-dim vector, then stored both the text and the vector</td>
+                    </tr>
+                    <tr>
+                        <td>Searched with a query</td>
+                        <td>Embedded the query with the <em>same</em> model, then computed the distance to every stored vector</td>
+                    </tr>
+                    <tr>
+                        <td>Saw ranked results</td>
+                        <td>Sorted all documents by distance and returned the closest ones</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="callout">
+                <strong>Key insight:</strong> You never told the database which documents
+                are about animals or weather or cooking. The embedding model figured out
+                the meaning on its own and placed similar documents near each other in
+                384-dimensional space. That's the whole point of embeddings &mdash; they
+                capture <em>meaning</em>, not just keywords.
+            </div>
+        </section>
+
+        <!-- Section 6: Next steps -->
+        <section>
+            <h2><span class="step">6</span> Looking Ahead</h2>
+            <p>
+                This tutorial stored short, single sentences. But real-world documents
+                are much longer &mdash; articles, emails, book chapters. What happens
+                when a document is too long for the embedding model to handle?
+            </p>
+            <p>
+                That's where <strong>chunking</strong> comes in: splitting long documents
+                into smaller pieces so each piece can be embedded and searched independently.
+                But that's a topic for the next tutorial.
+            </p>
+        </section>
+
+    </div>
+
+</main>
+
+<script type="module">
+    import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+
+    // =========================================================
+    // State: our in-memory "vector database"
+    // =========================================================
+    let embedder = null;
+    let collection = [];   // { id, text, vector }
+    let docCounter = 0;
+
+    // =========================================================
+    // Load model
+    // =========================================================
+    async function init() {
+        const progressFill = document.getElementById('progress-fill');
+        const statusEl = document.getElementById('loading-status');
+
+        try {
+            statusEl.textContent = 'Loading embedding model...';
+            progressFill.style.width = '10%';
+
+            embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
+                progress_callback: (p) => {
+                    if (p.status === 'downloading' || p.status === 'progress') {
+                        const pct = p.progress ? Math.round(p.progress) : 0;
+                        progressFill.style.width = Math.max(10, Math.min(90, pct)) + '%';
+                        if (p.file) {
+                            statusEl.textContent = `Downloading ${p.file}... ${pct}%`;
+                        }
+                    } else if (p.status === 'ready') {
+                        progressFill.style.width = '95%';
+                        statusEl.textContent = 'Model loaded!';
+                    }
+                }
+            });
+
+            progressFill.style.width = '100%';
+            statusEl.textContent = 'Ready!';
+
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('interactive').style.display = 'block';
+                renderCollection();
+            }, 300);
+
+        } catch (err) {
+            statusEl.textContent = 'Error loading model: ' + err.message;
+            progressFill.style.background = '#ef4444';
+            console.error(err);
+        }
+    }
+
+    // =========================================================
+    // Embed text using the model
+    // =========================================================
+    async function embed(text) {
+        const output = await embedder([text], { pooling: 'mean', normalize: true });
+        return Array.from(output[0].data);
+    }
+
+    // =========================================================
+    // Euclidean distance (squared) - what ChromaDB uses by default
+    // =========================================================
+    function distanceSquared(a, b) {
+        let sum = 0;
+        for (let i = 0; i < a.length; i++) {
+            const d = a[i] - b[i];
+            sum += d * d;
+        }
+        return sum;
+    }
+
+    // =========================================================
+    // Add a document
+    // =========================================================
+    async function addDocument() {
+        const input = document.getElementById('doc-input');
+        const btn = document.getElementById('add-btn');
+        const status = document.getElementById('add-status');
+        const text = input.value.trim();
+        if (!text || !embedder) return;
+
+        btn.disabled = true;
+        btn.textContent = 'Embedding...';
+        status.textContent = '';
+
+        try {
+            const vector = await embed(text);
+            docCounter++;
+            const id = 'doc' + docCounter;
+            collection.push({ id, text, vector });
+
+            status.textContent = `Added "${text}" as ${id}`;
+            input.value = '';
+            renderCollection();
+
+            // Show the try-it callout once they have 3+ docs
+            if (collection.length >= 3) {
+                document.getElementById('try-callout').style.display = 'block';
+            }
+        } catch (err) {
+            status.textContent = 'Error: ' + err.message;
+            status.style.color = '#ef4444';
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Add';
+    }
+
+    // =========================================================
+    // Render the collection
+    // =========================================================
+    function renderCollection() {
+        const countEl = document.getElementById('doc-count');
+        const listEl = document.getElementById('doc-list');
+        countEl.textContent = collection.length + ' document' + (collection.length !== 1 ? 's' : '') + ' stored';
+
+        if (collection.length === 0) {
+            listEl.innerHTML = '<div class="empty-message">No documents yet. Add some above!</div>';
+            return;
+        }
+
+        listEl.innerHTML = '';
+        for (const doc of collection) {
+            const item = document.createElement('div');
+            item.className = 'doc-item';
+            item.innerHTML =
+                '<span class="doc-id">' + doc.id + '</span>' +
+                '<span class="doc-text">' + escapeHtml(doc.text) + '</span>';
+            listEl.appendChild(item);
+        }
+    }
+
+    // =========================================================
+    // Search
+    // =========================================================
+    async function doSearch() {
+        const input = document.getElementById('search-input');
+        const btn = document.getElementById('search-btn');
+        const resultsEl = document.getElementById('search-results');
+        const query = input.value.trim();
+        if (!query || !embedder) return;
+
+        if (collection.length === 0) {
+            resultsEl.innerHTML = '<div class="empty-message">No documents to search. Add some first!</div>';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Searching...';
+
+        try {
+            const queryVector = await embed(query);
+
+            // Compute distance to every document
+            const scored = collection.map(doc => ({
+                id: doc.id,
+                text: doc.text,
+                distance: distanceSquared(queryVector, doc.vector),
+            }));
+
+            // Sort by distance (lowest first = most similar)
+            scored.sort((a, b) => a.distance - b.distance);
+
+            // Render results
+            resultsEl.innerHTML = '';
+            scored.forEach((result, rank) => {
+                const isTop = rank === 0;
+                const div = document.createElement('div');
+                div.className = 'search-result' + (isTop ? ' top-match' : '');
+
+                // Color the distance: green for close, yellow for medium, red for far
+                const dist = result.distance;
+                const distColor = dist < 0.5 ? '#4ade80' : dist < 1.0 ? '#fbbf24' : dist < 1.5 ? '#f97316' : '#ef4444';
+
+                div.innerHTML =
+                    '<div class="search-result-header">' +
+                        '<div class="result-rank">' + (rank + 1) + '</div>' +
+                        '<span class="result-id">' + result.id + '</span>' +
+                        '<span class="result-distance" style="color: ' + distColor + '">distance: ' + result.distance.toFixed(4) + '</span>' +
+                    '</div>' +
+                    '<div class="result-text">' + escapeHtml(result.text) + '</div>';
+                resultsEl.appendChild(div);
+            });
+        } catch (err) {
+            resultsEl.innerHTML = '<div class="empty-message">Error: ' + err.message + '</div>';
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Search';
+    }
+
+    // =========================================================
+    // Clear collection
+    // =========================================================
+    function clearCollection() {
+        collection = [];
+        docCounter = 0;
+        renderCollection();
+        document.getElementById('search-results').innerHTML = '';
+        document.getElementById('add-status').textContent = '';
+        document.getElementById('try-callout').style.display = 'none';
+    }
+
+    // =========================================================
+    // Add from suggestion chip
+    // =========================================================
+    function addSuggestion(el) {
+        document.getElementById('doc-input').value = el.textContent;
+        addDocument();
+    }
+
+    // =========================================================
+    // Utility
+    // =========================================================
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // =========================================================
+    // Enter key support
+    // =========================================================
+    document.getElementById('doc-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') addDocument();
+    });
+    document.getElementById('search-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') doSearch();
+    });
+
+    // =========================================================
+    // Expose functions for inline handlers
+    // =========================================================
+    window.addDocument = addDocument;
+    window.addSuggestion = addSuggestion;
+    window.doSearch = doSearch;
+    window.clearCollection = clearCollection;
+
+    // =========================================================
+    // Init
+    // =========================================================
+    init();
+</script>
+
+</body>
+</html>
